@@ -178,7 +178,7 @@ readonly NGINX_SITE="/etc/nginx/sites-available/24care"
 log "Installing OS packages"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-BASE_PACKAGES=(ca-certificates curl git openssl ufw)
+BASE_PACKAGES=(ca-certificates curl git openssl ufw unzip)
 if [[ "$PROXY_MODE" == "nginx" ]]; then
   BASE_PACKAGES+=(nginx)
 fi
@@ -199,12 +199,17 @@ fi
 if [[ ! -d "$APP_DIR/.git" ]]; then
   log "Cloning application repository"
   install -d -o "$APP_USER" -g "$APP_USER" -m 755 "$(dirname -- "$APP_DIR")"
-  git clone --branch "$APP_BRANCH" "$REPO_URL" "$APP_DIR"
+  su - "$APP_USER" -s /bin/bash -c "
+    git clone --branch '$APP_BRANCH' '$REPO_URL' '$APP_DIR'
+  "
 else
   log "Updating existing application checkout"
-  git -C "$APP_DIR" fetch --prune origin
-  git -C "$APP_DIR" checkout "$APP_BRANCH"
-  git -C "$APP_DIR" pull --ff-only origin "$APP_BRANCH"
+  su - "$APP_USER" -s /bin/bash -c "
+    set -Eeuo pipefail
+    git -C '$APP_DIR' fetch --prune origin
+    git -C '$APP_DIR' checkout '$APP_BRANCH'
+    git -C '$APP_DIR' pull --ff-only origin '$APP_BRANCH'
+  "
 fi
 chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 
@@ -270,6 +275,9 @@ su - "$APP_USER" -s /bin/bash -c "
   . '$SERVER_ENV'
   set +a
   '$BUN_BIN' install --frozen-lockfile
+  if [[ -f agent/package.json ]]; then
+    (cd agent && '$BUN_BIN' install --frozen-lockfile)
+  fi
   '$BUN_BIN' run typecheck
   '$BUN_BIN' run build
 "
