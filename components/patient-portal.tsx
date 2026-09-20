@@ -355,7 +355,17 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
         <div className="portal-topbar-actions">
           <label className="role-switch">
             {authenticated ? "Account role" : "Demo role"}
-            {authenticated ? <span className="quiet-badge">{role}</span> : <select value={role} onChange={(event) => onRoleChange(event.target.value as PortalRole)}>{portalRoles.map((availableRole) => <option key={availableRole} value={availableRole}>{availableRole}</option>)}</select>}
+            <select
+              value={role}
+              aria-label={authenticated ? "Change account role preview" : "Change demo role"}
+              onChange={(event) => onRoleChange(event.target.value as PortalRole)}
+            >
+              {portalRoles.map((availableRole) => (
+                <option key={availableRole} value={availableRole}>
+                  {availableRole === "clinician" ? "Clinician" : availableRole === "caretaker" ? "Caretaker" : "Patient"}
+                </option>
+              ))}
+            </select>
           </label>
           <button className="text-button portal-auth-button" type="button" onClick={onOpenAuth}>{authenticated ? "Live account" : "Sign in"}</button>
           <span className="user-chip" aria-label={`Signed in as ${userName}`}>{userName.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
@@ -414,15 +424,31 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
                   <label>Safe callback number<input value={callback} onChange={(event) => setCallback(event.target.value)} /></label>
                 </div>
                 <label className="consent-box check-row"><input type="checkbox" checked={hasConsent} onChange={(event) => setHasConsent(event.target.checked)} /><span>I understand this guided intake is not a diagnosis. I consent to sharing these answers with the care team for review.</span></label>
-                <button className="primary-button portal-start" onClick={startIntake} disabled={!hasConsent}>Start guided intake</button>
-                <button className="primary-button portal-start" type="button" onClick={startLiveCall} disabled={!hasConsent}>{authenticated ? "Start live AI call" : "Sign in to start live AI call"}</button>
-                <button className="secondary-button portal-start" type="button" onClick={() => {
-                  if (!authenticated) {
-                    onOpenAuth();
-                    return;
-                  }
-                  void startRecordedCall();
-                }} disabled={!hasConsent}>{authenticated ? "Start recorded AI call" : "Sign in to start recorded AI call"}</button>
+                
+                <button className="primary-button portal-start portal-start-main" onClick={startIntake} disabled={!hasConsent}>
+                  Start guided intake
+                </button>
+
+                <div className="portal-alt-options">
+                  <div className="portal-alt-divider">
+                    <span>Or voice options</span>
+                  </div>
+                  <div className="portal-voice-actions">
+                    <button className="secondary-button portal-start-secondary" type="button" onClick={startLiveCall} disabled={!hasConsent}>
+                      {authenticated ? "Start live AI call" : "Sign in for live AI call"}
+                    </button>
+                    <button className="secondary-button portal-start-secondary" type="button" onClick={() => {
+                      if (!authenticated) {
+                        onOpenAuth();
+                        return;
+                      }
+                      void startRecordedCall();
+                    }} disabled={!hasConsent}>
+                      {authenticated ? "Start recorded AI call" : "Sign in for recorded call"}
+                    </button>
+                  </div>
+                </div>
+
                 <p className="microcopy">{authenticated ? "Live calls stream audio to the selected provider and archive consented caller audio in private Supabase Storage. A clinician reviews the resulting case." : "Sign in is required before microphone access and private audio storage. Guided intake remains available without an account."}</p>
               </>
             ) : hasCompleted ? (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CoverageMap, type CoverageCase } from "@/components/coverage-map";
 import { AuthPanel, type AuthenticatedAppUser } from "@/components/auth-panel";
 import { demoClinicalPolicy } from "@/lib/clinical-policy";
 import { getDemoUserForRole, type PortalRole } from "@/lib/demo-auth";
@@ -197,6 +198,37 @@ export function CareConsole() {
   const availableCareStaff = roster.filter(
     (member) => member.status === "available" && member.role !== "Duty clinician",
   );
+  const coverageCases = useMemo<CoverageCase[]>(() => {
+    const locations = [
+      { locality: "North zone", x: 29, y: 24, etaMinutes: 18 },
+      { locality: "City zone", x: 68, y: 23, etaMinutes: 12 },
+      { locality: "Outer zone", x: 77, y: 61, etaMinutes: 27 },
+      { locality: "South zone", x: 24, y: 65, etaMinutes: 22 },
+      { locality: "East zone", x: 84, y: 39, etaMinutes: 16 },
+    ];
+    const sourceCases = [
+      ...tasks.map((task) => ({
+        id: task.id,
+        caseAlias: task.caseAlias,
+        priority: task.priority,
+        assignee: task.assignee,
+        status: task.state,
+      })),
+      ...reviewQueue.map((item) => ({
+        id: item.id,
+        caseAlias: item.case_alias,
+        priority: item.priority,
+        assignee: null,
+        status: "awaiting_review",
+      })),
+    ];
+
+    return sourceCases.map((item, index) => ({
+      ...item,
+      ...locations[index % locations.length],
+    }));
+  }, [reviewQueue, tasks]);
+
 
   function addAudit(actor: string, action: string, detail: string) {
     setAudit((current) => [
@@ -842,6 +874,7 @@ export function CareConsole() {
         {view === "roster" && (
           <section className="operations-layout" aria-label="Coverage and task coordination">
             <div className="operations-main">
+              <CoverageMap cases={coverageCases} staff={roster} />
               <section className="panel">
                 <div className="panel-heading"><div><p className="eyebrow">Manual availability</p><h2>Duty coverage</h2></div><span className="quiet-badge">Coordinator controlled</span></div>
                 <div className="roster-list">

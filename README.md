@@ -78,9 +78,17 @@ We would consider the credits useful if clinician review shows that the chosen p
 
 Not deployed yet. Run locally using the instructions below.
 
+### Source Code
+
+[GitHub repository — gokulkannant/24care](https://github.com/gokulkannant/24care)
+
+> Before submission, confirm that the repository is public and replace this section with a deployed-project link if one becomes available.
+
 ### Demo / Pitch Video
 
-Not recorded yet. The recommended video flow is: show the consent gate, complete a Malayalam/English intake, reveal the policy evidence, confirm the case as the duty clinician, and show the resulting task/audit entry.
+Not recorded yet. Add the public video URL here before submission.
+
+The recommended video flow is: show the consent gate, complete a Malayalam/English intake, reveal the policy evidence, confirm the case as the duty clinician, and show the resulting task/audit entry.
 
 ## Screenshots
 
@@ -95,8 +103,8 @@ Not recorded yet. The recommended video flow is: show the consent gate, complete
 ## How to Run Locally
 
 ```bash
-git clone <repo-url>
-cd <project-folder>
+git clone https://github.com/gokulkannant/24care.git
+cd 24care
 npm install
 ```
 
