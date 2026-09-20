@@ -1,0 +1,11 @@
+node_modules/
+.next/
+*.tsbuildinfo
+.env*
+!.env.example
+client_secret_*.json
+
+# Generated and scratch state
+.bun-tmp/
+supabase/.temp/
+test-artifacts/

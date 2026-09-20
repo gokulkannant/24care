@@ -1,0 +1,34 @@
+{
+  "name": "24-care-triage-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.ts",
+    "test:e2e": "node scripts/verify-ui.mjs",
+    "voice:dev": "bun run voice-gateway.ts",
+    "agent:dev": "bun run --cwd agent dev",
+    "agent:start": "bun run --cwd agent start",
+    "agent:typecheck": "bun run --cwd agent typecheck"
+  },
+  "dependencies": {
+    "@google/genai": "^2.23.0",
+    "jose": "^6.2.12",
+    "livekit-client": "^2.22.3",
+    "livekit-server-sdk": "^2.19.0",
+    "next": "16.2.9",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "playwright": "^1.58.2",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}

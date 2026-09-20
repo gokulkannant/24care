@@ -1,0 +1,8 @@
+-- Canonical Supabase schema and RLS policies are maintained as migrations.
+-- Apply them with `supabase db push` after reviewing the target project:
+--   supabase/migrations/20260920120000_care_workflow.sql
+--   supabase/migrations/20260920123000_care_workflow_hardening.sql
+--   supabase/migrations/20260920130000_first_party_audio.sql
+--
+-- This file is intentionally not executable so it cannot drift from the
+-- migration history or be mistaken for an RLS-complete production schema.
