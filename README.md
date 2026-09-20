@@ -1,227 +1,113 @@
-# 24 Care triage assistant
+# 24 Care Triage Assistant
 
-24 Care is a safety-first web MVP for a clinician-reviewed care-intake workflow. Patients and caretakers can submit a guided request or start a consented browser voice call. The system stores evidence, prepares a deterministic policy result, and routes the case to a clinician. A care task is created only after a clinician confirms or overrides the proposed action.
+## Overview
 
-> **Safety boundary:** This is not a diagnostic system, emergency dispatcher, telephone helpline, referral engine, or autonomous care system. The current policy is fictional training data. Do not use this repository with real patient data without clinical, privacy, security, retention, and legal approval.
+24 Care Triage Assistant is a safety-first web MVP for IPM's 24×7 palliative-care support workflow. It helps a patient, caretaker, or call handler capture consented concerns in Malayalam, English, or mixed language; prepares a transparent, policy-based priority draft; and routes that draft to a duty clinician for confirmation.
 
-## Quick start
+The system is intentionally **not** a diagnostic, referral, or dispatch system. A clinician must confirm or override every proposed action before a care task is created.
 
-### Web application
+## Problem Statement
 
-```powershell
-bun install
-bun run dev
+IPM's 24×7 support line has limited staff availability, so not every incoming concern can receive the same immediate response. Call handlers need a consistent way to capture policy-relevant information, make incomplete information visible, and place the most concerning cases in front of a duty clinician without allowing an AI system to make clinical decisions.
+
+## Solution
+
+The project provides role-aware patient, caretaker, and clinician workspaces. A caller completes a consented, guided intake or uses the recorded-call path. The system produces a transcript, extracts only configured policy signals, and applies a deterministic severity policy. It shows the rule, evidence excerpts, missing follow-up questions, and uncertainty to the duty clinician. Only after clinician confirmation or an audited override does the coordinator task queue update.
+
+## Features
+
+- Consent gate before transcription or audio capture begins.
+- Malayalam, English, and code-switched guided intake with typed fallback.
+- Deterministic, versioned policy engine with evidence, rule IDs, uncertainty, and missing questions.
+- Clinician-only confirmation or override before a care task can be created.
+- Patient, caretaker, clinician, and coordinator workflow views.
+- Supabase-ready authentication, case persistence, audit records, and role/case-scoped RLS migrations.
+- Gemini on Vertex AI using Application Default Credentials (ADC) for the server-side audio-processing path.
+- Manual staff availability and an unassigned urgent queue.
+- Provider benchmark view and Playwright browser-flow coverage.
+
+## Tech Stack
+
+- *Frontend:* Next.js 16, React 19, TypeScript, responsive custom CSS.
+- *Backend:* Next.js App Router route handlers; optional Node.js LiveKit agent worker.
+- *Database:* Supabase Postgres, Auth, Storage, and Row Level Security migrations.
+- *APIs / Services:* Google Gemini on Vertex AI with ADC, Supabase, and optional LiveKit WebRTC transport.
+- *Hosting / Deployment:* Not deployed yet; designed for a Node-compatible deployment with server-only environment variables.
+- *Other Tools:* Playwright, TypeScript, Bun, npm, and Docker Compose for local LiveKit experimentation.
+
+## Codex / OpenAI Usage
+
+Codex was used throughout the hackathon for ideation, architecture planning, implementation, UI/UX iteration, debugging, test design, and documentation. It helped turn the workflow into a safe system boundary: generative AI can transcribe audio and ask one intake question, while deterministic policy and clinician confirmation control the actual triage workflow.
+
+Codex also generated and verified the Playwright end-to-end journey covering consent, policy evidence, clinician confirmation, task creation, and mobile layout. The app's runtime audio path uses Gemini through Vertex AI with ADC; it does not use an OpenAI API key.
+
+## Demo
+
+### Live Demo
+
+Not deployed yet. Run locally using the instructions below.
+
+### Demo / Pitch Video
+
+Not recorded yet. The recommended video flow is: show the consent gate, complete a Malayalam/English intake, reveal the policy evidence, confirm the case as the duty clinician, and show the resulting task/audit entry.
+
+## Screenshots
+
+### Clinician review
+
+![Clinician review with evidence and a required human confirmation](test-artifacts/clinician-review.png)
+
+### Mobile coverage and task queue
+
+![Mobile coverage and tasks layout](test-artifacts/mobile-coverage.png)
+
+## How to Run Locally
+
+```bash
+git clone <repo-url>
+cd <project-folder>
+npm install
 ```
 
-Open:
+Copy `.env.example` to `.env.local`, then configure Supabase and LiveKit only if you need their authenticated paths. For Gemini through Vertex AI ADC, set a Google Cloud project and authenticate locally:
 
-```text
-http://localhost:3000
-```
-
-### Gemini Live gateway
-
-The browser live-call path uses a server-side Bun gateway. Start it in a second terminal after configuring ADC and `.env.local`:
-
-```powershell
+```bash
 gcloud auth application-default login
-bun run voice:dev
 ```
-
-The default local gateway is:
-
-```text
-ws://127.0.0.1:8787/live
-```
-
-### Checks
-
-```powershell
-bun run typecheck
-bun run agent:typecheck
-bun run test
-bun run test:e2e
-bun run build
-```
-
-## Documentation map
-
-- [Documentation index](./docs/README.md)
-- [Architecture and data flows](./docs/architecture.md)
-- [API reference](./docs/api.md)
-- [Operations, configuration, and troubleshooting](./docs/operations.md)
-- [UI source register](./sources.md)
-
-Start with the operations guide for a clean machine setup. Read the architecture guide before changing authentication, audio, provider, or persistence boundaries.
-
-## Demo workflow
-
-1. The default screen is the clinician workspace. Use the role selector to switch to **Patient** or **Caretaker**.
-2. Enter a case alias and callback reference.
-3. Accept the intake notice.
-4. Choose guided intake, recorded AI intake, or live AI call when authenticated and configured.
-5. Answer the structured questions or speak naturally. Live and recorded AI prompts are Malayalam-first; mixed Malayalam/English callers receive Malayalam replies unless they request English.
-6. Submit the request for clinician review.
-7. Switch to **Clinician**, open the review queue, and inspect transcript, assessment, policy signals, and follow-ups.
-8. Confirm or override the prepared action with a note.
-9. Open **Coverage & tasks** to see the task and audit trail.
-
-Without an authenticated account, the role selector uses a demo-only HTTP-only cookie and local browser state. Demo mode is for UI evaluation only; it is not an identity system.
-
-## What is implemented
-
-- Next.js responsive web application with installable manifest.
-- Mobile-first patient, caretaker, and clinician surfaces.
-- Custom Google OAuth with PKCE, short-lived access JWTs, rotating refresh sessions, and HTTP-only cookies.
-- Supabase PostgreSQL persistence through server-side REST calls.
-- Supabase private `care-audio` Storage bucket for consented raw audio chunks.
-- Consent-gated guided intake with typed answers and browser speech synthesis.
-- Browser live-call UI with duration, mute, cancel, red end-call action, transcript, and completion state.
-- Gemini Vertex AI ADC provider path using `gemini-3.8-flash` for recorded processing and `gemini-3.8-live` for native audio Live API calls.
-- Optional OpenAI recorded and Realtime provider path behind `AI_PROVIDER=openai`.
-- Optional LiveKit transport experiment under `agent/`; it is not required by the first-party patient recording path.
-- Deterministic fictional policy engine for immediate, urgent, same-day, routine, and insufficient-information outcomes.
-- Clinician confirmation/override gate before task creation.
-- Audit trail and review queue.
-
-## Technology and runtime
-
-| Layer | Implementation |
-| --- | --- |
-| Web runtime | Next.js 16, React 19, TypeScript |
-| Package/runtime tooling | Bun; npm remains compatible |
-| Authentication | Custom Google OAuth and application sessions |
-| Database | Supabase PostgreSQL with RLS migrations |
-| Object storage | Supabase Storage, private `care-audio` bucket |
-| Live voice | Gemini Live through local Bun gateway, or OpenAI Realtime WebRTC |
-| Recorded processing | Gemini Vertex ADC or OpenAI provider adapter |
-| Optional transport | LiveKit client, server SDK, and worker |
-| Testing | Node test runner through `tsx`, Playwright smoke script, TypeScript |
-
-## Configuration summary
-
-Copy the template:
-
-```powershell
-Copy-Item .env.example .env.local
-```
-
-Gemini/Vertex ADC configuration:
 
 ```env
-AI_PROVIDER=gemini
-GEMINI_MODEL=gemini-3.8-flash
-GEMINI_LIVE_MODEL=gemini-3.8-live
-GOOGLE_CLOUD_PROJECT=<project-id>
-GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_CLOUD_PROJECT=your-google-cloud-project
+GOOGLE_CLOUD_LOCATION=global
 GOOGLE_GENAI_USE_VERTEXAI=true
-LIVE_GATEWAY_URL=ws://127.0.0.1:8787/live
-LIVE_GATEWAY_PORT=8787
-AUTH_JWT_SECRET=<at-least-32-random-characters>
-AUTH_REFRESH_SECRET=<different-at-least-32-random-characters>
 ```
 
-Server-only persistence and OAuth values:
+Start the application:
 
-```env
-SUPABASE_SECRET_KEY=<server-only-supabase-secret>
-SUPABASE_STORAGE_BUCKET=care-audio
-GOOGLE_CLIENT_ID=<oauth-web-client-id>
-GOOGLE_CLIENT_SECRET=<oauth-web-client-secret>
-NEXT_PUBLIC_APP_URL=https://24care.busundo.org
+```bash
+npm run dev
 ```
 
-OpenAI is optional:
+Open `http://localhost:3000`.
 
-```env
-AI_PROVIDER=openai
-OPENAI_API_KEY=<server-only-openai-key>
-OPENAI_MODEL=gpt-4.1-mini
-OPENAI_TRANSCRIPTION_MODEL=gpt-4o-mini-transcribe
-OPENAI_LIVE_MODEL=gpt-realtime
-OPENAI_REALTIME_VOICE=marin
+Useful verification commands:
+
+```bash
+npm run typecheck
+npm test
+npm run test:e2e
+npm run build
 ```
 
-Never expose service keys, provider API keys, OAuth client secrets, ADC files, refresh tokens, or `AUTH_*` secrets through `NEXT_PUBLIC_*` variables.
+The optional LiveKit worker is started separately with:
 
-## Google OAuth URLs
-
-For the public domain and local development, configure these Google OAuth Web application values.
-
-Authorized JavaScript origins:
-
-```text
-https://24care.busundo.org
-http://localhost:3000
+```bash
+npm run agent:dev
 ```
 
-Authorized redirect URIs:
+## Additional Notes
 
-```text
-https://24care.busundo.org/api/auth/google/callback
-http://localhost:3000/api/auth/google/callback
-```
-
-The callback is `/api/auth/google/callback`, not `/auth/callback`. Google verifies identity; the application creates its own `app_user`, profile role, access token, and refresh session. Supabase Auth provider configuration is not required.
-
-## Supabase setup
-
-Link the target project and apply reviewed migrations:
-
-```powershell
-supabase login
-supabase init
-supabase link --project-ref <project-ref>
-supabase db push
-```
-
-The migration history creates the care workflow schema, custom application sessions, RLS authorization functions, recording metadata, and the private `care-audio` bucket. `supabase/schema.sql` is intentionally non-executable; migrations are canonical.
-
-## Live provider behavior
-
-### Gemini
-
-The default path uses Google ADC, not a browser API key:
-
-```powershell
-gcloud auth application-default login
-```
-
-- `gemini-3.8-flash`: recorded audio/text processing and follow-up generation.
-- `gemini-3.8-live`: low-latency audio-to-audio conversation through `voice-gateway.ts`.
-- `voice-gateway.ts`: verifies a two-minute application JWT, opens the Vertex Live session, forwards 16 kHz PCM input, and returns 24 kHz response audio/transcripts.
-- Malayalam is the default live response language; English is used only when requested or clearly spoken throughout.
-
-### OpenAI
-
-The OpenAI path requires a server-only `OPENAI_API_KEY`. The live browser path receives a short-lived client secret from `POST /api/live/session`; the long-lived key never reaches the browser.
-
-The provider-independent safety boundary remains in application code: consent, authorization, deterministic policy assessment, clinician confirmation, task creation, and auditing do not depend on the model vendor.
-
-## Audio and data handling
-
-For an authenticated recorded or live call:
-
-1. The API creates a `call_recording` metadata row after consent.
-2. The browser records audio with `MediaRecorder`.
-3. Chunks are uploaded sequentially to private Supabase Storage under `{userId}/{recordingId}/`.
-4. Chunk metadata and processed transcript fragments are persisted in PostgreSQL.
-5. On call end, queued uploads finish and the recording is marked ready.
-6. The transcript is assessed and submitted to the clinician review queue.
-
-Raw audio is sensitive health-related data. The MVP does not yet provide a complete retention/deletion worker, legal hold model, incident response process, or production access-review workflow.
-
-## Production boundary
-
-Before a pilot, the team must:
-
-- Replace demo role switching and local storage with fully enforced organization-aware authorization.
-- Review patient/caretaker relationship workflows and every RLS policy.
-- Configure private bucket retention, deletion, encryption, access review, and audit export.
-- Add upload retry, orphan-record reconciliation, provider timeout handling, and outage fallback.
-- Test Malayalam, mixed-language, noisy, incomplete, silent, urgent, and possible-emergency calls with clinician-approved evaluation data.
-- Define callback, clinician escalation, emergency, and service-outage procedures.
-- Keep raw audio, transcripts, tokens, and health data out of routine logs.
-- Obtain clinical, privacy, security, and legal approval before real patient use.
-
-The system must never be represented to a caller as a doctor, emergency service, guaranteed response, or autonomous decision-maker.
+- The current policy phrases are fictional demonstration content. IPM must supply and approve the real severity rubric, consent language, and referral pathways before any pilot.
+- The app fails closed when Google ADC or required server configuration is unavailable.
+- The repository includes recording-storage scaffolding, but real patient audio must remain disabled until IPM approves retention, deletion, encryption, access review, and incident procedures.
+- The Supabase audio migration requires a small correction before it is applied: `public.call_record` should be `public.call_recording` in the grant statement.
+- This project must never be used for autonomous diagnosis, emergency decisions, hospital referral, care dispatch, or clinical advice.

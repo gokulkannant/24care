@@ -32,7 +32,13 @@ async function parseResponse(response: Response): Promise<unknown> {
   }
 }
 
-export async function supabaseRestRequest<T>(
+/**
+ * Not exported on purpose. Callers that need database access go through
+ * supabaseServerRestRequest, which supplies the credential itself, so no
+ * module outside this file can choose which identity a query runs as.
+ * Authorization for these tables lives in lib/care-repository.ts.
+ */
+async function supabaseRestRequest<T>(
   path: string,
   options: { method?: "GET" | "POST" | "PATCH"; body?: unknown; accessToken: string; prefer?: string },
 ): Promise<T> {
@@ -65,7 +71,20 @@ export function supabaseServerRestRequest<T>(
   return supabaseRestRequest<T>(path, { ...options, accessToken: getSupabaseServiceRoleKey() });
 }
 
-export async function supabaseStorageUpload(
+export function supabaseServerStorageUpload(
+  bucket: string,
+  path: string,
+  data: ArrayBuffer,
+  options: { contentType: string },
+) {
+  return supabaseStorageUpload(bucket, path, data, {
+    ...options,
+    accessToken: getSupabaseServiceRoleKey(),
+  });
+}
+
+/** Not exported on purpose — see supabaseRestRequest above. */
+async function supabaseStorageUpload(
   bucket: string,
   path: string,
   data: ArrayBuffer,

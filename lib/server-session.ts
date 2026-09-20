@@ -1,11 +1,17 @@
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "./custom-auth";
-import { getSupabaseServiceRoleKey, supabaseServerRestRequest } from "./supabase-rest";
+import { supabaseServerRestRequest } from "./supabase-rest";
 
 export type AppRole = "patient" | "caretaker" | "clinician" | "care_coordinator" | "admin";
 
+/**
+ * An authenticated caller's identity.
+ *
+ * Deliberately carries no database credential. Server-side data access goes
+ * through lib/care-repository.ts, which supplies the Supabase key itself, so
+ * route handlers never hold a token they could pass to an unscoped query.
+ */
 export interface AuthenticatedSession {
-  accessToken: string;
   userId: string;
   email: string | null;
   name: string;
@@ -29,7 +35,6 @@ export async function getAuthenticatedSession(): Promise<AuthenticatedSession | 
     const profile = profiles[0];
     if (!profile) return null;
     return {
-      accessToken: getSupabaseServiceRoleKey(),
       userId: user.id,
       email: user.email,
       name: profile.display_name,

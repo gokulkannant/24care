@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { canAccessCase } from "@/lib/authorization";
+import { appendTranscriptSegment, toRepositoryError } from "@/lib/care-repository";
 import { getAuthenticatedSession } from "@/lib/server-session";
-import { supabaseRestRequest } from "@/lib/supabase-rest";
+import type { TranscriptSegment } from "@/lib/types";
 
-const speakers = new Set(["caller", "assistant", "clinician", "system"]);
-const languages = new Set(["ml", "en", "mixed"]);
-const statuses = new Set(["partial", "final"]);
+const speakers = new Set<TranscriptSegment["speaker"]>(["caller", "assistant", "clinician", "system"]);
+const languages = new Set<TranscriptSegment["language"]>(["ml", "en", "mixed"]);
+const statuses = new Set<TranscriptSegment["status"]>(["partial", "final"]);
+
+function pick<T>(value: unknown, allowed: Set<T>, fallback: T): T {
+  return allowed.has(value as T) ? (value as T) : fallback;
+}
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const session = await getAuthenticatedSession();
@@ -22,28 +26,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: "A non-empty transcript segment is required." }, { status: 400 });
   }
 
-  const speaker = typeof body.speaker === "string" && speakers.has(body.speaker) ? body.speaker : "caller";
-  const language = typeof body.language === "string" && languages.has(body.language) ? body.language : "mixed";
-  const status = typeof body.status === "string" && statuses.has(body.status) ? body.status : "final";
   const { id } = await context.params;
-  if (!(await canAccessCase(session, id))) return NextResponse.json({ error: "The case is not accessible." }, { status: 403 });
-
   try {
-    const rows = await supabaseRestRequest<Array<{ id: string }>>("/transcript_segment", {
-      method: "POST",
-      accessToken: session.accessToken,
-      prefer: "return=representation",
-      body: [{
-        case_id: id,
-        provider_item_id: typeof body.providerItemId === "string" ? body.providerItemId : null,
-        speaker,
-        transcript: body.text.trim(),
-        language,
-        status,
-      }],
+    const segment = await appendTranscriptSegment(session, id, {
+      text: body.text,
+      speaker: pick(body.speaker, speakers, "caller"),
+      language: pick(body.language, languages, "mixed"),
+      status: pick(body.status, statuses, "final"),
+      providerItemId: typeof body.providerItemId === "string" ? body.providerItemId : null,
     });
-    return NextResponse.json({ segment: rows[0] ?? null }, { status: 201 });
+    return NextResponse.json({ segment }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to persist transcript segment." }, { status: 502 });
+    const failure = toRepositoryError(error, "Unable to persist transcript segment.");
+    return NextResponse.json({ error: failure.message }, { status: failure.status });
   }
 }
