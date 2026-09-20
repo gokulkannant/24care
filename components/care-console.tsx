@@ -581,7 +581,14 @@ export function CareConsole() {
             <button
               key={item.id}
               className={`nav-item ${view === item.id ? "is-active" : ""}`}
-              onClick={() => setView(item.id)}
+              onClick={(event) => {
+                setView(item.id);
+                event.currentTarget.scrollIntoView({
+                  behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+                  block: "nearest",
+                  inline: "center",
+                });
+              }}
               aria-current={view === item.id ? "page" : undefined}
             >
               <span>{item.eyebrow}</span>
@@ -689,7 +696,11 @@ export function CareConsole() {
                 <div className="transcript-feed" aria-live="polite" aria-label="Transcript updates">
                   {segments.length === 0 ? (
                     <div className="empty-transcript">
-                      <span aria-hidden="true">⌁</span>
+                      <span aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M3 12h2m3-5v10m4-13v16m4-11v6m4-3h2" />
+                        </svg>
+                      </span>
                       <p>Start a consented intake, add fictional demo turns, or enter a typed update below.</p>
                     </div>
                   ) : (

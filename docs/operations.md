@@ -175,6 +175,56 @@ docker compose -f docker-compose.livekit.yml down
 
 A production LiveKit deployment needs trusted TLS, public networking, TURN, monitoring, and a controlled agent deployment. Treat this path as experimental until those controls are tested.
 
+## One-shot Ubuntu/Debian VPS setup
+
+The repository includes `scripts/setup-vps.sh` for a fresh VPS. It installs Bun, the application system user, systemd services for Next.js and the Gemini gateway, and the production build. It supports either Nginx/Certbot or an existing Cloudflare Tunnel.
+
+Because your Cloudflare Tunnel is already running, use Cloudflare mode. This does not install Nginx, request a certificate, or expose VPS ports publicly:
+
+```bash
+sudo ./scripts/setup-vps.sh \
+  --cloudflare-tunnel \
+  --domain 24care.busundo.org \
+  --env-file /root/24care.env \
+  --vertex-credentials /root/vertex-service-account.json
+```
+
+If the script is not running from a checkout with an `origin` remote, add `--repo-url <git-url>`. It derives `NEXT_PUBLIC_APP_URL=https://<domain>` and `LIVE_GATEWAY_URL=wss://<domain>/live`, generates missing `AUTH_JWT_SECRET` and `AUTH_REFRESH_SECRET` values, builds the application, and starts:
+
+```text
+24care-web.service       Next.js on 127.0.0.1:3000
+24care-gateway.service   Bun Gemini gateway on 127.0.0.1:8787
+```
+
+Configure the existing Cloudflare Tunnel ingress as:
+
+```yaml
+ingress:
+  - hostname: 24care.busundo.org
+    path: /live.*
+    service: http://127.0.0.1:8787
+  - hostname: 24care.busundo.org
+    service: http://127.0.0.1:3000
+  - service: http_status:404
+```
+
+The `/live` route is required for browser live calls. If only the web UI is needed, route the hostname to port `3000`; live calls will remain unavailable until `/live` is routed to `8787`.
+
+The Google OAuth redirect must be:
+
+```text
+https://24care.busundo.org/api/auth/google/callback
+```
+
+The Vertex credential file is a Google Cloud service-account credential for ADC. It is not the Google OAuth web-client JSON used for sign-in. Inspect deployment logs with:
+
+```bash
+sudo journalctl -u 24care-web -f
+sudo journalctl -u 24care-gateway -f
+```
+
+For a direct VPS deployment without Cloudflare Tunnel, omit `--cloudflare-tunnel` and use `--tls --tls-email <email>`; the script then installs Nginx and Certbot.
+
 ## Validation commands
 
 Run the checks that match the changed surface:

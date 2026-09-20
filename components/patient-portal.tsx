@@ -402,7 +402,11 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
             ) : !started && !hasCompleted && recorderState === "idle" ? (
               <>
                 <div className="portal-call-preview">
-                  <span className="portal-call-icon" aria-hidden="true">⌁</span>
+                  <span className="portal-call-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M3 12h2m3-5v10m4-13v16m4-11v6m4-3h2" />
+                    </svg>
+                  </span>
                   <div><strong>In-app guided call</strong><p>Questions appear one at a time so you can answer clearly. You can type in Malayalam, English, or both.</p></div>
                 </div>
                 <div className="field-grid portal-fields">
