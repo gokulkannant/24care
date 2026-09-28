@@ -679,8 +679,13 @@ export function CareConsole() {
               }}
               aria-current={view === item.id ? "page" : undefined}
             >
-              <span>{item.eyebrow}</span>
-              {item.title}
+              <span className="nav-item-eyebrow">{item.eyebrow}</span>
+              <span className="nav-item-label">{item.title}</span>
+              {item.id === "review" && (alerted || reviewQueue.length > 0) ? (
+                <span className="nav-item-counter nav-item-counter--alert">{reviewQueue.length || 1}</span>
+              ) : item.id === "roster" && tasks.length > 0 ? (
+                <span className="nav-item-counter">{tasks.length}</span>
+              ) : null}
             </button>
           ))}
         </nav>

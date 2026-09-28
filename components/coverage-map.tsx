@@ -129,11 +129,23 @@ export function CoverageMap({ cases, staff, onAssignNurse }: CoverageMapProps) {
             </defs>
             <rect width="100" height="70" fill="url(#coverage-grid)" />
             <path className="coverage-map-water" d="M0 8 C18 16 15 28 29 32 C43 36 38 51 50 54 C66 58 70 47 81 51 C91 55 94 64 100 68 L100 70 L0 70 Z" />
+            <text x="3" y="24" className="coverage-map-geo-label">Arabian Sea</text>
+            <text x="8" y="44" className="coverage-map-geo-label">Beach Road</text>
+            <text x="32" y="16" className="coverage-map-geo-label">Medical College</text>
+            <text x="65" y="19" className="coverage-map-geo-label">Mavoor Road</text>
+            <text x="76" y="66" className="coverage-map-geo-label">Feroke</text>
             <path className="coverage-map-road" d="M7 59 C18 48 22 31 37 27 C49 24 59 31 67 23 C76 14 85 18 95 8" />
             <path className="coverage-map-road coverage-map-road--secondary" d="M19 9 C26 18 31 22 43 39 C49 47 61 52 82 60" />
             {routePlanned ? <polyline className="coverage-map-route" points={`50,36 ${routePoints}`} /> : null}
             <circle className="coverage-map-hub" cx="50" cy="36" r="2.6" />
           </svg>
+          <div className="coverage-map-scale" aria-hidden="true">
+            <span className="scale-line" />
+            <span>5 km</span>
+          </div>
+          <div className="coverage-map-gis-badge" aria-hidden="true">
+            <span>Kozhikode District · 11.2588° N, 75.7804° E</span>
+          </div>
           <span className="coverage-map-hub-label">Care hub</span>
           {cases.map((item) => (
             <button
