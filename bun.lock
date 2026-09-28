@@ -6,12 +6,15 @@
       "name": "24-care-triage-assistant",
       "dependencies": {
         "@google/genai": "^2.23.0",
+        "@types/leaflet": "^1.9.22",
         "jose": "^6.2.12",
+        "leaflet": "^1.9.4",
         "livekit-client": "^2.22.3",
         "livekit-server-sdk": "^2.19.0",
         "next": "16.2.9",
         "react": "19.2.3",
         "react-dom": "19.2.3",
+        "react-leaflet": "^5.0.0",
       },
       "devDependencies": {
         "@types/node": "24.10.1",
@@ -172,9 +175,15 @@
 
     "@protobufjs/utf8": ["@protobufjs/utf8@1.1.2", "https://registry.npmmirror.com/@protobufjs/utf8/-/utf8-1.1.2.tgz", {}, "sha512-b1UQwcEZ4yCnMCD8DAL1VlbvBJE9/IX4FTIp7BG1xYpf29SLazLSrqUkj4w7Y5y7cCVP6E5tcqqcI0xemPkHug=="],
 
+    "@react-leaflet/core": ["@react-leaflet/core@3.0.0", "https://registry.npmmirror.com/@react-leaflet/core/-/core-3.0.0.tgz", { "peerDependencies": { "leaflet": "^1.9.0", "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-3EWmekh4Nz+pGcr+xjf0KNyYfC3U2JjnkWsh0zcqaexYqmmB5ZhH37kz41JXGmKzpaMZCnPofBBm64i+YrEvGQ=="],
+
     "@swc/helpers": ["@swc/helpers@0.5.15", "https://registry.npmmirror.com/@swc/helpers/-/helpers-0.5.15.tgz", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g=="],
 
     "@types/dom-mediacapture-record": ["@types/dom-mediacapture-record@1.0.22", "https://registry.npmmirror.com/@types/dom-mediacapture-record/-/dom-mediacapture-record-1.0.22.tgz", {}, "sha512-mUMZLK3NvwRLcAAT9qmcK+9p7tpU2FHdDsntR3YI4+GY88XrgG4XiE7u1Q2LAN2/FZOz/tdMDC3GQCR4T8nFuw=="],
+
+    "@types/geojson": ["@types/geojson@7946.0.16", "https://registry.npmmirror.com/@types/geojson/-/geojson-7946.0.16.tgz", {}, "sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg=="],
+
+    "@types/leaflet": ["@types/leaflet@1.9.22", "https://registry.npmmirror.com/@types/leaflet/-/leaflet-1.9.22.tgz", { "dependencies": { "@types/geojson": "*" } }, "sha512-h3lhECYEKDasG7LFHu+GiHqAvsgLuQvlJvVZzJDGONo3sEL+wUOqSFLnwkZlK0qVxnxbuGFW8iBlJNYs5wgndA=="],
 
     "@types/node": ["@types/node@24.10.1", "https://registry.npmmirror.com/@types/node/-/node-24.10.1.tgz", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ=="],
 
@@ -240,6 +249,8 @@
 
     "jws": ["jws@4.0.1", "https://registry.npmmirror.com/jws/-/jws-4.0.1.tgz", { "dependencies": { "jwa": "^2.0.1", "safe-buffer": "^5.0.1" } }, "sha512-EKI/M/yqPncGUUh44xz0PxSidXFr/+r0pA70+gIYhjv+et7yxM+s29Y+VGDkovRofQem0fs7Uvf4+YmAdyRduA=="],
 
+    "leaflet": ["leaflet@1.9.4", "https://registry.npmmirror.com/leaflet/-/leaflet-1.9.4.tgz", {}, "sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA=="],
+
     "livekit-client": ["livekit-client@2.22.3", "https://registry.npmmirror.com/livekit-client/-/livekit-client-2.22.3.tgz", { "dependencies": { "@livekit/mutex": "1.1.1", "@livekit/protocol": "1.50.4", "events": "^3.3.0", "jose": "^6.1.0", "loglevel": "^1.9.2", "machina": "^7.0.0", "sdp-transform": "^2.15.0", "tslib": "2.8.1", "typed-emitter": "^2.1.0", "webrtc-adapter": "9.0.6" }, "peerDependencies": { "@types/dom-mediacapture-record": "^1" } }, "sha512-jw9zBKXY5Gtr5MZ7vEON3QhMNccuDvYHck1PFSyG1aaateQPqgKZFBMgZkFZaXHIf9RV4MDW5xpTK2b/+qbwOg=="],
 
     "livekit-server-sdk": ["livekit-server-sdk@2.19.0", "https://registry.npmmirror.com/livekit-server-sdk/-/livekit-server-sdk-2.19.0.tgz", { "dependencies": { "@bufbuild/protobuf": "^1.10.1", "@livekit/protocol": "1.51.0", "jose": "^5.1.2" } }, "sha512-9q+MuVS2qky5+Xaf7/XalMu90EcGX2wkKBy80ANlJH8WCulQpfNMU8ILIMq913X59kH6itNyxP4fr16616KG3A=="],
@@ -275,6 +286,8 @@
     "react": ["react@19.2.3", "https://registry.npmmirror.com/react/-/react-19.2.3.tgz", {}, "sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA=="],
 
     "react-dom": ["react-dom@19.2.3", "https://registry.npmmirror.com/react-dom/-/react-dom-19.2.3.tgz", { "dependencies": { "scheduler": "^0.27.0" }, "peerDependencies": { "react": "^19.2.3" } }, "sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg=="],
+
+    "react-leaflet": ["react-leaflet@5.0.0", "https://registry.npmmirror.com/react-leaflet/-/react-leaflet-5.0.0.tgz", { "dependencies": { "@react-leaflet/core": "^3.0.0" }, "peerDependencies": { "leaflet": "^1.9.0", "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-CWbTpr5vcHw5bt9i4zSlPEVQdTVcML390TjeDG0cK59z1ylexpqC6M1PJFjV8jD7CF+ACBFsLIDs6DRMoLEofw=="],
 
     "resolve-pkg-maps": ["resolve-pkg-maps@1.0.0", "https://registry.npmmirror.com/resolve-pkg-maps/-/resolve-pkg-maps-1.0.0.tgz", {}, "sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw=="],
 

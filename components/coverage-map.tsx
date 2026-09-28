@@ -1,15 +1,27 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import type { Priority, StaffMember } from "@/lib/types";
 
+const LeafletCoverageMap = dynamic(() => import("./leaflet-coverage-map"), {
+  ssr: false,
+  loading: () => (
+    <div className="coverage-map-loading">
+      <div className="map-loader-spinner" />
+      <p>Initializing OpenStreetMap tiles for Kozhikode…</p>
+    </div>
+  ),
+});
 export interface CoverageCase {
   id: string;
   caseAlias: string;
   priority: Priority;
   locality: string;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
+  lat?: number;
+  lng?: number;
   etaMinutes: number;
   assignee: string | null;
   status: string;
@@ -120,48 +132,15 @@ export function CoverageMap({ cases, staff, onAssignNurse }: CoverageMapProps) {
       </div>
 
       <div className="coverage-map-layout">
-        <div className="coverage-map-canvas" role="img" aria-label="Fictional coverage map showing case severity markers and the care hub">
-          <svg className="coverage-map-svg" viewBox="0 0 100 70" aria-hidden="true" preserveAspectRatio="none">
-            <defs>
-              <pattern id="coverage-grid" width="8" height="8" patternUnits="userSpaceOnUse">
-                <path d="M 8 0 L 0 0 0 8" fill="none" stroke="currentColor" strokeOpacity=".12" strokeWidth=".35" />
-              </pattern>
-            </defs>
-            <rect width="100" height="70" fill="url(#coverage-grid)" />
-            <path className="coverage-map-water" d="M0 8 C18 16 15 28 29 32 C43 36 38 51 50 54 C66 58 70 47 81 51 C91 55 94 64 100 68 L100 70 L0 70 Z" />
-            <text x="3" y="24" className="coverage-map-geo-label">Arabian Sea</text>
-            <text x="8" y="44" className="coverage-map-geo-label">Beach Road</text>
-            <text x="32" y="16" className="coverage-map-geo-label">Medical College</text>
-            <text x="65" y="19" className="coverage-map-geo-label">Mavoor Road</text>
-            <text x="76" y="66" className="coverage-map-geo-label">Feroke</text>
-            <path className="coverage-map-road" d="M7 59 C18 48 22 31 37 27 C49 24 59 31 67 23 C76 14 85 18 95 8" />
-            <path className="coverage-map-road coverage-map-road--secondary" d="M19 9 C26 18 31 22 43 39 C49 47 61 52 82 60" />
-            {routePlanned ? <polyline className="coverage-map-route" points={`50,36 ${routePoints}`} /> : null}
-            <circle className="coverage-map-hub" cx="50" cy="36" r="2.6" />
-          </svg>
-          <div className="coverage-map-scale" aria-hidden="true">
-            <span className="scale-line" />
-            <span>5 km</span>
-          </div>
-          <div className="coverage-map-gis-badge" aria-hidden="true">
-            <span>Kozhikode District · 11.2588° N, 75.7804° E</span>
-          </div>
-          <span className="coverage-map-hub-label">Care hub</span>
-          {cases.map((item) => (
-            <button
-              className={`coverage-map-marker coverage-map-marker--${priorityTone[item.priority]} ${selectedCase?.id === item.id ? "is-selected" : ""}`}
-              key={item.id}
-              type="button"
-              style={{ left: `${item.x}%`, top: `${(item.y / 70) * 100}%` }}
-              onClick={() => setSelectedId(item.id)}
-              aria-label={`${item.caseAlias}, ${priorityLabel[item.priority]}, ${item.locality}`}
-              aria-pressed={selectedCase?.id === item.id}
-            >
-              <span className="coverage-map-marker-dot" aria-hidden="true" />
-              <span className="coverage-map-marker-label">{item.caseAlias}</span>
-            </button>
-          ))}
-          <span className="coverage-map-note">Fictional demo locations</span>
+        <div className="coverage-map-canvas" role="region" aria-label="OpenStreetMap coverage map with palliative care cases and hub">
+          <LeafletCoverageMap
+            cases={cases}
+            selectedId={selectedId}
+            routePlanned={routePlanned}
+            onSelectCase={setSelectedId}
+            priorityLabel={priorityLabel}
+            priorityRank={priorityRank}
+          />
         </div>
 
         <div className="coverage-map-details">

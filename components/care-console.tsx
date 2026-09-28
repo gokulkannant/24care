@@ -212,11 +212,11 @@ export function CareConsole() {
   );
   const coverageCases = useMemo<CoverageCase[]>(() => {
     const locations = [
-      { locality: "North zone", x: 29, y: 24, etaMinutes: 18 },
-      { locality: "City zone", x: 68, y: 23, etaMinutes: 12 },
-      { locality: "Outer zone", x: 77, y: 61, etaMinutes: 27 },
-      { locality: "South zone", x: 24, y: 65, etaMinutes: 22 },
-      { locality: "East zone", x: 84, y: 39, etaMinutes: 16 },
+      { locality: "Medical College North", lat: 11.2795, lng: 75.8320, etaMinutes: 14 },
+      { locality: "Mavoor Road (City zone)", lat: 11.2588, lng: 75.7804, etaMinutes: 18 },
+      { locality: "Feroke (Outer zone)", lat: 11.1712, lng: 75.8354, etaMinutes: 27 },
+      { locality: "Kozhikode South Beach", lat: 11.2505, lng: 75.7680, etaMinutes: 22 },
+      { locality: "Kunnamangalam (East zone)", lat: 11.3115, lng: 75.8920, etaMinutes: 16 },
     ];
     const sourceCases = [
       ...tasks.map((task) => ({
