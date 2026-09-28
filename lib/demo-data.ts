@@ -94,6 +94,62 @@ export const demoSegments: TranscriptSegment[] = [
   },
 ];
 
+export interface DemoScenario {
+  id: string;
+  title: string;
+  malayalamTitle: string;
+  alias: string;
+  relationship: string;
+  locality: string;
+  transcript: string;
+  concern: string;
+  change: string;
+  support: string;
+  priorityNote: string;
+}
+
+export const demoScenarios: DemoScenario[] = [
+  {
+    id: "severe-pain",
+    title: "Breakthrough cancer pain",
+    malayalamTitle: "അതീവ കാൻസർ വേദന",
+    alias: "Sukumaran Nair",
+    relationship: "Caregiver",
+    locality: "North zone (Kozhikode Medical College)",
+    transcript: "എന്റെ അച്ഛന് കഠിനമായ വേദനയുണ്ട്. രാവിലെ മുതൽ Morphine കൊടുത്തിട്ടും വേദന കുറയുന്നില്ല. The pain has escalated severely and he cannot lie down.",
+    concern: "എന്റെ അച്ഛന് കഠിനമായ വേദനയുണ്ട്. Morphine കൊടുത്തിട്ടും കുറയുന്നില്ല. Severe breakthrough pain.",
+    change: "It suddenly became much worse",
+    support: "Clinical review",
+    priorityNote: "Immediate review cue: uncontrolled breakthrough pain despite morphine",
+  },
+  {
+    id: "catheter-block",
+    title: "Catheter blockage & retention",
+    malayalamTitle: "യൂറിൻ കത്തീറ്റർ തടസ്സം",
+    alias: "Mariamma Joseph",
+    relationship: "Family member",
+    locality: "City zone (Mavoor Road)",
+    transcript: "യൂറിൻ ബാഗിൽ മൂത്രം ശേഖരിക്കപ്പെടുന്നില്ല. Catheter is blocked since 3 hours, and she has lower abdominal swelling and discomfort.",
+    concern: "യൂറിൻ ബാഗിൽ മൂത്രം വരുന്നില്ല. Catheter appears blocked, severe discomfort.",
+    change: "It has increased today",
+    support: "Clinical review",
+    priorityNote: "Urgent review cue: acute urinary retention / blocked catheter",
+  },
+  {
+    id: "dressing-supplies",
+    title: "Routine wound dressing supplies",
+    malayalamTitle: "ഡ്രസ്സിംഗ് സാധനങ്ങൾ",
+    alias: "Abdul Rahman",
+    relationship: "Caregiver",
+    locality: "Outer zone (Feroke)",
+    transcript: "ഡ്രസ്സിംഗ് മാറ്റാൻ ആവശ്യമായ ഗാസ് റോളും നോർമൽ സലൈനും തീർന്നുപോയി. We need fresh dressing supplies delivered for routine ulcer care.",
+    concern: "ഗാസ് റോളും ക്ലീനിംഗ് ലോഷനും തീർന്നു. We need dressing supplies delivered.",
+    change: "It is stable or routine",
+    support: "Supplies today",
+    priorityNote: "Routine queue: scheduled palliative dressing replenishment",
+  },
+];
+
 export const illustrativeBenchmarks: BenchmarkRun[] = [
   {
     provider: "OpenAI live transcription",

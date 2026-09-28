@@ -92,7 +92,7 @@ export interface CareTask {
   priority: Priority;
   assignee: string | null;
   action: string;
-  state: "draft" | "awaiting_clinician" | "assigned" | "unassigned_urgent";
+  state: "draft" | "awaiting_clinician" | "assigned" | "unassigned_urgent" | "en_route" | "completed";
   createdAt: string;
 }
 

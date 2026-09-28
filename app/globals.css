@@ -804,6 +804,235 @@ input::placeholder, textarea::placeholder { color: #8a9692; }
   to { opacity: 1; stroke-dashoffset: 0; }
 }
 
+/* Quick triage scenario chips */
+.demo-scenarios-bar {
+  display: flex; flex-direction: column; gap: var(--s2);
+  padding: 12px 14px;
+  border: 1px solid #d4e7da; border-radius: var(--r-md);
+  background: #f4faf5;
+}
+.demo-scenarios-title {
+  color: var(--forest-deep); font-size: var(--text-3xs); font-weight: 800;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.demo-scenarios-list, .portal-presets-chips {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.scenario-chip, .portal-preset-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid #b7dcbe; border-radius: var(--r-pill);
+  color: var(--forest-deep); background: white;
+  font-size: var(--text-xs); font-weight: 700;
+  cursor: pointer; transition: all 140ms ease;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 5%);
+}
+.scenario-chip:hover, .portal-preset-chip:hover {
+  border-color: var(--forest); background: #eaf6ee; transform: translateY(-1px);
+}
+.scenario-chip-tag {
+  color: #c07a1b; font-size: var(--text-2xs); font-weight: 800;
+}
+
+/* Patient portal quick presets */
+.portal-presets-bar {
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 11px 13px;
+  border: 1px solid #d7ebe0; border-radius: var(--r-md);
+  background: #f8fdf9;
+}
+.portal-presets-title {
+  color: var(--muted); font-size: var(--text-3xs); font-weight: 800;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+
+/* Language toggle button */
+.lang-toggle-button {
+  display: inline-flex; align-items: center;
+  padding: 5px 11px;
+  border: 1px solid rgb(255 255 255 / 35%); border-radius: var(--r-pill);
+  color: white; background: rgb(255 255 255 / 12%);
+  font-size: var(--text-xs); font-weight: 800;
+  cursor: pointer; transition: background 140ms ease;
+}
+.lang-toggle-button:hover { background: rgb(255 255 255 / 22%); }
+
+/* Network offline simulation chip */
+.network-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--text-3xs); font-weight: 800;
+  cursor: pointer; border: 1px solid transparent;
+  transition: all 140ms ease;
+}
+.network-chip--online {
+  color: #1a6e4e; background: #e4f7ed; border-color: #bee8d3;
+}
+.network-chip--offline {
+  color: #8c5b0f; background: #fdf3df; border-color: #ebd09c;
+}
+.network-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+}
+.network-chip--online .network-dot { background: #22a06b; }
+.network-chip--offline .network-dot { background: #d78b19; }
+
+/* Route planning export actions */
+.coverage-route-actions {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+}
+.coverage-route-actions button {
+  font-size: var(--text-xs);
+}
+
+/* Case map nurse assignment box */
+.coverage-map-assign-box {
+  display: grid; gap: 5px; margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid #dcece1;
+}
+.coverage-map-assign-box label {
+  color: var(--muted); font-size: var(--text-3xs); font-weight: 800;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.assign-controls {
+  display: flex; align-items: center; gap: 8px;
+}
+.assign-controls select {
+  flex: 1; padding: 6px 9px; font-size: var(--text-xs);
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: white; color: var(--ink);
+}
+
+/* Operations subtabs */
+.operations-subtabs {
+  display: flex; gap: var(--s2);
+}
+.operations-tab-btn {
+  padding: 9px 16px;
+  border: 1px solid var(--line); border-radius: var(--r-md);
+  color: var(--muted); background: white;
+  font-size: var(--text-xs); font-weight: 800;
+  cursor: pointer; transition: all 140ms ease;
+}
+.operations-tab-btn:hover {
+  color: var(--forest); background: #f9fdfa; border-color: #9eccae;
+}
+.operations-tab-btn.is-active {
+  color: white; background: var(--forest); border-color: var(--forest);
+  box-shadow: 0 2px 6px rgb(13 69 57 / 20%);
+}
+
+/* Nurse field view */
+.nurse-field-panel { display: grid; gap: var(--s4); }
+.nurse-filter-switch {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--muted); font-size: var(--text-xs); font-weight: 700;
+}
+.nurse-filter-switch select {
+  padding: 6px 10px; font-size: var(--text-xs);
+  border: 1px solid var(--line); border-radius: var(--r-sm); background: white;
+}
+.nurse-visits-summary {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  font-size: var(--text-xs); color: var(--muted);
+}
+.nurse-visits-summary span {
+  padding: 5px 9px; border: 1px solid var(--line); border-radius: var(--r-pill); background: #fbfdfb;
+}
+.nurse-visits-summary strong { color: var(--forest); }
+.nurse-hub-tag { color: var(--forest-deep); font-weight: 700; }
+.nurse-visits-list { display: grid; gap: var(--s3); }
+.nurse-visit-card {
+  display: grid; gap: var(--s3); padding: var(--s4);
+  border: 1px solid #d4e7da; border-radius: var(--r-lg);
+  background: white; box-shadow: 0 2px 8px rgb(0 0 0 / 4%);
+}
+.nurse-visit-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s3);
+}
+.visit-seq-badge {
+  display: grid; place-items: center; width: 28px; height: 28px;
+  border-radius: 50%; color: white; background: var(--forest);
+  font-size: var(--text-xs); font-weight: 800; flex-shrink: 0;
+}
+.visit-locality { color: var(--muted); font-size: var(--text-xs); margin-top: 3px; }
+.visit-action { font-size: var(--text-sm); line-height: 1.5; color: #2d453c; }
+.visit-state-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 12px; border-radius: var(--r-md); background: #f5fbf7;
+}
+.visit-state-buttons { display: flex; gap: 6px; }
+.small-btn {
+  padding: 4px 9px; border: 1px solid #c2ded0; border-radius: var(--r-sm);
+  color: var(--muted); background: white; font-size: var(--text-3xs); font-weight: 800;
+  cursor: pointer;
+}
+.small-btn.is-current {
+  color: white; background: var(--forest); border-color: var(--forest);
+}
+.nurse-visit-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.nurse-visit-actions button { font-size: var(--text-xs); }
+
+/* Dispatch notification simulation modal */
+.notification-modal-shell {
+  position: fixed; inset: 0; z-index: 120;
+  display: grid; place-items: center; padding: var(--s4);
+  background: rgb(0 0 0 / 55%); backdrop-filter: blur(4px);
+  animation: modal-fade-in 180ms ease;
+}
+.notification-modal-card {
+  width: 100%; max-width: 520px;
+  display: grid; gap: var(--s4); padding: var(--s5);
+  border-radius: var(--r-xl); background: white;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
+  animation: modal-slide-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.notif-modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.notif-preview-box {
+  display: grid; gap: 8px; padding: var(--s4);
+  border: 1px solid #d5ecd8; border-radius: var(--r-lg); background: #f2faf4;
+}
+.notif-channel-tag {
+  color: #176d49; font-size: var(--text-3xs); font-weight: 800; text-transform: uppercase;
+}
+.notif-bubble {
+  white-space: pre-wrap; font-size: var(--text-sm); line-height: 1.55; color: #1e362e;
+}
+.notif-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Audio Waveform Visualizer */
+.audio-waveform {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  height: 38px; padding: 6px 14px;
+  border: 1px solid #cbe4d3; border-radius: var(--r-pill);
+  background: #f4faf6;
+}
+.wave-bar {
+  display: block; width: 4px; border-radius: 2px;
+  background: var(--forest);
+  height: 6px;
+  transition: height 120ms ease;
+}
+.audio-waveform.is-active .wave-bar {
+  animation: wave-pulse 800ms infinite ease-in-out alternate;
+}
+.audio-waveform.is-active .bar-1 { animation-delay: 0ms; }
+.audio-waveform.is-active .bar-2 { animation-delay: 100ms; }
+.audio-waveform.is-active .bar-3 { animation-delay: 200ms; }
+.audio-waveform.is-active .bar-4 { animation-delay: 300ms; }
+.audio-waveform.is-active .bar-5 { animation-delay: 150ms; }
+.audio-waveform.is-active .bar-6 { animation-delay: 250ms; }
+.audio-waveform.is-active .bar-7 { animation-delay: 50ms; }
+.audio-waveform.is-active .bar-8 { animation-delay: 180ms; }
+
+@keyframes wave-pulse {
+  0% { height: 6px; }
+  100% { height: 26px; }
+}
+
 
 /* --------------------------------------------------------------------------
    Provider benchmark

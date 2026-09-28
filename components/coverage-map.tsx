@@ -18,6 +18,7 @@ export interface CoverageCase {
 interface CoverageMapProps {
   cases: CoverageCase[];
   staff: StaffMember[];
+  onAssignNurse?: (caseId: string, nurseName: string | null) => void;
 }
 
 const priorityRank: Record<Priority, number> = {
@@ -44,7 +45,7 @@ const priorityLabel: Record<Priority, string> = {
   insufficient_information: "Information needed",
 };
 
-export function CoverageMap({ cases, staff }: CoverageMapProps) {
+export function CoverageMap({ cases, staff, onAssignNurse }: CoverageMapProps) {
   const [selectedId, setSelectedId] = useState(cases[0]?.id ?? null);
   const [routePlanned, setRoutePlanned] = useState(false);
   const selectedCase = cases.find((item) => item.id === selectedId) ?? cases[0] ?? null;
@@ -55,7 +56,43 @@ export function CoverageMap({ cases, staff }: CoverageMapProps) {
   const routePoints = routeCases.map((item) => `${item.x},${item.y}`).join(" ");
   const urgentCount = cases.filter((item) => item.priority === "immediate_clinician_review" || item.priority === "urgent_review").length;
   const availableCount = staff.filter((member) => member.status === "available" && member.role !== "Duty clinician").length;
+  const availableNurses = staff.filter((member) => member.role !== "Duty clinician");
 
+  function exportToWhatsApp() {
+    const text = [
+      "🏥 *IPM 24 Care - Nurse Visit Itinerary*",
+      "📍 Care Hub: Kozhikode Medical College",
+      "",
+      ...routeCases.map(
+        (item, index) =>
+          `${index + 1}. *${item.caseAlias}* (${priorityLabel[item.priority]})\n   Locality: ${item.locality} (ETA ~${item.etaMinutes}m)\n   Staff: ${item.assignee ?? "Pending assignment"}`
+      ),
+      "",
+      "_Sent from IPM 24 Care Desk_",
+    ].join("\n");
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  }
+
+  function exportToGoogleMaps() {
+    const stops = [
+      "Kozhikode+Medical+College",
+      ...routeCases.map((item) => encodeURIComponent(`${item.locality}, Kozhikode, Kerala`)),
+    ];
+    window.open(`https://www.google.com/maps/dir/${stops.join("/")}`, "_blank");
+  }
+
+  function shareCaseToWhatsApp(c: CoverageCase) {
+    const text = [
+      `📋 *IPM Care Assignment: ${c.caseAlias}*`,
+      `Priority: ${priorityLabel[c.priority]}`,
+      `Locality: ${c.locality} (ETA ~${c.etaMinutes} mins)`,
+      `Assigned Nurse: ${c.assignee ?? "Unassigned"}`,
+      `Status: ${c.status.replaceAll("_", " ")}`,
+      "",
+      "_Please confirm arrival via IPM care desk._",
+    ].join("\n");
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  }
   return (
     <section className="panel coverage-map-panel" aria-labelledby="coverage-map-title">
       <div className="coverage-map-heading">
@@ -128,6 +165,34 @@ export function CoverageMap({ cases, staff }: CoverageMapProps) {
                 <div><dt>Assignment</dt><dd>{selectedCase.assignee ?? "Unassigned"}</dd></div>
                 <div><dt>Visit state</dt><dd>{selectedCase.status.replaceAll("_", " ")}</dd></div>
               </dl>
+              {onAssignNurse ? (
+                <div className="coverage-map-assign-box">
+                  <label htmlFor={`assign-nurse-${selectedCase.id}`}>Assign field nurse</label>
+                  <div className="assign-controls">
+                    <select
+                      id={`assign-nurse-${selectedCase.id}`}
+                      value={selectedCase.assignee ?? ""}
+                      onChange={(e) => onAssignNurse(selectedCase.id, e.target.value || null)}
+                      aria-label={`Assign nurse for ${selectedCase.caseAlias}`}
+                    >
+                      <option value="">-- Unassigned --</option>
+                      {availableNurses.map((nurse) => (
+                        <option key={nurse.id} value={nurse.name}>
+                          {nurse.name} ({nurse.status})
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={() => shareCaseToWhatsApp(selectedCase)}
+                      title="Share case brief to nurse on WhatsApp"
+                    >
+                      WhatsApp brief
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </article>
           ) : <p className="empty-copy">No cases have location data yet.</p>}
 
@@ -147,8 +212,21 @@ export function CoverageMap({ cases, staff }: CoverageMapProps) {
             <p>Start at the care hub, address the highest-severity cases first, and confirm each handoff with the assigned staff member.</p>
           </div>
           <ol>
-            {routeCases.map((item) => <li key={item.id}><strong>{item.caseAlias}</strong><span>{item.locality} · {priorityLabel[item.priority]}</span></li>)}
+            {routeCases.map((item) => (
+              <li key={item.id}>
+                <strong>{item.caseAlias}</strong>
+                <span>{item.locality} · {priorityLabel[item.priority]} (ETA ~{item.etaMinutes}m) · {item.assignee ?? "Unassigned"}</span>
+              </li>
+            ))}
           </ol>
+          <div className="coverage-route-actions">
+            <button type="button" className="secondary-button" onClick={exportToWhatsApp}>
+              📲 Share itinerary via WhatsApp
+            </button>
+            <button type="button" className="secondary-button" onClick={exportToGoogleMaps}>
+              🗺️ Open route in Google Maps
+            </button>
+          </div>
         </div>
       ) : null}
 

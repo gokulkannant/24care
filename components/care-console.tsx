@@ -7,11 +7,13 @@ import { demoClinicalPolicy } from "@/lib/clinical-policy";
 import { getDemoUserForRole, type PortalRole } from "@/lib/demo-auth";
 import { type IntakeCaseDraft } from "@/lib/intake";
 import {
+  demoScenarios,
   demoSegments,
   illustrativeBenchmarks,
   seededAudit,
   seededRoster,
   seededTasks,
+  type DemoScenario,
 } from "@/lib/demo-data";
 import { applySeverityPolicy, assessDemoTranscript } from "@/lib/triage";
 import { PatientPortal } from "@/components/patient-portal";
@@ -115,6 +117,16 @@ export function CareConsole() {
   const remoteAudioElements = useRef<Set<HTMLElement>>(new Set());
   const segmentsRef = useRef<TranscriptSegment[]>([]);
 
+  const [isOfflineSimulated, setIsOfflineSimulated] = useState(false);
+  const [operationsTab, setOperationsTab] = useState<"map_coverage" | "nurse_visits">("map_coverage");
+  const [selectedNurseFilter, setSelectedNurseFilter] = useState("Nurse Fathima K.");
+  const [caregiverNotification, setCaregiverNotification] = useState<{
+    open: boolean;
+    caseAlias: string;
+    nurseName: string;
+    priority: Priority;
+    phone: string;
+  } | null>(null);
   useEffect(() => {
     setRoster(safeStorageGet("24-care-demo-roster", seededRoster));
     setTasks(safeStorageGet("24-care-demo-tasks", seededTasks));
@@ -520,6 +532,50 @@ export function CareConsole() {
     setTasks((current) => [task, ...current]);
   }
 
+  function loadDemoScenario(scenario: DemoScenario) {
+    setCaseAlias(scenario.alias);
+    setCallerRelationship(scenario.relationship);
+    setHasCallConsent(true);
+    const segment: TranscriptSegment = {
+      id: crypto.randomUUID(),
+      text: scenario.transcript,
+      status: "final",
+      language: "mixed",
+      createdAt: new Date().toISOString(),
+    };
+    addSegments([segment]);
+    setProviderMessage(`Loaded: ${scenario.title} (${scenario.priorityNote})`);
+    addAudit("Duty clinician", "Loaded demo scenario", `${scenario.title} (${scenario.alias})`);
+  }
+
+  function handleAssignNurseFromMap(caseId: string, nurseName: string | null) {
+    setTasks((current) =>
+      current.map((t) => (t.id === caseId ? { ...t, assignee: nurseName, state: nurseName ? "assigned" : "unassigned_urgent" } : t))
+    );
+    const targetTask = tasks.find((t) => t.id === caseId);
+    const alias = targetTask?.caseAlias ?? "Case";
+    addAudit(
+      "Duty clinician",
+      nurseName ? "Assigned field nurse" : "Unassigned field nurse",
+      `${alias} ${nurseName ? `assigned to ${nurseName} for field visit` : "returned to unassigned queue"}.`
+    );
+    if (nurseName) {
+      setCaregiverNotification({
+        open: true,
+        caseAlias: alias,
+        nurseName,
+        priority: targetTask?.priority ?? "urgent_review",
+        phone: callback,
+      });
+    }
+  }
+
+  function updateTaskVisitState(taskId: string, state: CareTask["state"]) {
+    setTasks((current) => current.map((t) => (t.id === taskId ? { ...t, state } : t)));
+    const target = tasks.find((t) => t.id === taskId);
+    addAudit("Field nurse", "Updated visit state", `${target?.caseAlias ?? "Case"}: ${state}`);
+  }
+
   async function recordDecision(outcome: ClinicalDecision["outcome"]) {
     if (!triage || decision || isSavingDecision) return;
     const note = decisionNote.trim() || (outcome === "confirmed" ? "Reviewed against current policy." : "Override recorded.");
@@ -642,6 +698,16 @@ export function CareConsole() {
             <h1>{navItems.find((item) => item.id === view)?.title}</h1>
           </div>
           <div className="topbar-actions">
+            <button
+              className={`network-chip ${isOfflineSimulated ? "network-chip--offline" : "network-chip--online"}`}
+              type="button"
+              onClick={() => setIsOfflineSimulated((c) => !c)}
+              title="Click to toggle offline resilience simulation"
+              aria-pressed={isOfflineSimulated}
+            >
+              <span className="network-dot" aria-hidden="true" />
+              {isOfflineSimulated ? "Offline cache active" : "Cloud sync online"}
+            </button>
             <span className="demo-badge">Demo only</span>
             <label className="role-switch">
               Role
@@ -662,6 +728,44 @@ export function CareConsole() {
           <p><strong>Training safety boundary.</strong> This workspace uses fictional policy signals and can only prepare a clinician-reviewed case. It cannot diagnose, dispatch, or refer a patient.</p>
         </div>
         {authOpen ? <AuthPanel onAuthenticated={handleAuthenticated} onClose={() => setAuthOpen(false)} /> : null}
+        {caregiverNotification?.open ? (
+          <div className="notification-modal-shell" role="dialog" aria-modal="true" aria-labelledby="notif-dialog-title">
+            <div className="notification-modal-card">
+              <div className="notif-modal-header">
+                <div>
+                  <p className="eyebrow">Real-time dispatch simulation</p>
+                  <h2 id="notif-dialog-title">Caregiver WhatsApp & SMS alert</h2>
+                </div>
+                <button type="button" className="text-button" onClick={() => setCaregiverNotification(null)}>✕</button>
+              </div>
+              <div className="notif-preview-box">
+                <div className="notif-channel-tag">📲 WhatsApp to {caregiverNotification.phone}</div>
+                <p className="notif-bubble">
+                  {`Namaskaram. IPM Palliative Care has reviewed your request for ${caregiverNotification.caseAlias}.\n\n`}
+                  {`👩⚕️ Nurse ${caregiverNotification.nurseName} has been assigned for a home visit (${priorityCopy[caregiverNotification.priority].label}).\n`}
+                  {`⏱️ Estimated arrival: ~20 mins.\n`}
+                  {`📞 Please keep this phone reachable.\n\n`}
+                  {`_For immediate life-threatening emergency, please dial 108._`}
+                </p>
+              </div>
+              <div className="notif-modal-actions">
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={() => {
+                    addAudit("System dispatch", "Dispatched caregiver WhatsApp alert", `Simulated WhatsApp sent to ${caregiverNotification.phone} (${caregiverNotification.caseAlias})`);
+                    setCaregiverNotification(null);
+                  }}
+                >
+                  Confirm & simulate send
+                </button>
+                <button type="button" className="secondary-button" onClick={() => setCaregiverNotification(null)}>
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {view === "intake" && (
           <section className="intake-layout" aria-label="Live call intake">
@@ -673,6 +777,23 @@ export function CareConsole() {
                     <h2>Caller details</h2>
                   </div>
                   <span className={`call-chip call-chip--${callState}`}>{callState === "live" ? `Live · ${formatClock(secondsLive)}` : callState}</span>
+                </div>
+                <div className="demo-scenarios-bar" role="group" aria-label="One-click demo triage scenarios">
+                  <span className="demo-scenarios-title">One-click demo cases:</span>
+                  <div className="demo-scenarios-list">
+                    {demoScenarios.map((scenario) => (
+                      <button
+                        key={scenario.id}
+                        type="button"
+                        className="scenario-chip"
+                        onClick={() => loadDemoScenario(scenario)}
+                        title={scenario.priorityNote}
+                      >
+                        <span className="scenario-chip-tag">⚡ {scenario.malayalamTitle}</span>
+                        <span className="scenario-chip-name">{scenario.title}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="field-grid">
                   <label>
@@ -874,8 +995,31 @@ export function CareConsole() {
         {view === "roster" && (
           <section className="operations-layout" aria-label="Coverage and task coordination">
             <div className="operations-main">
-              <CoverageMap cases={coverageCases} staff={roster} />
-              <section className="panel">
+              <div className="operations-subtabs" role="tablist" aria-label="Operations views">
+                <button
+                  role="tab"
+                  type="button"
+                  className={`operations-tab-btn ${operationsTab === "map_coverage" ? "is-active" : ""}`}
+                  aria-selected={operationsTab === "map_coverage"}
+                  onClick={() => setOperationsTab("map_coverage")}
+                >
+                  🗺️ Case map & duty coverage
+                </button>
+                <button
+                  role="tab"
+                  type="button"
+                  className={`operations-tab-btn ${operationsTab === "nurse_visits" ? "is-active" : ""}`}
+                  aria-selected={operationsTab === "nurse_visits"}
+                  onClick={() => setOperationsTab("nurse_visits")}
+                >
+                  👩⚕️ Nurse field view (My visits today)
+                </button>
+              </div>
+
+              {operationsTab === "map_coverage" ? (
+                <>
+                  <CoverageMap cases={coverageCases} staff={roster} onAssignNurse={handleAssignNurseFromMap} />
+                  <section className="panel">
                 <div className="panel-heading"><div><p className="eyebrow">Manual availability</p><h2>Duty coverage</h2></div><span className="quiet-badge">Coordinator controlled</span></div>
                 <div className="roster-list">
                   {roster.map((member) => (
@@ -917,7 +1061,104 @@ export function CareConsole() {
                   ))}
                 </div>
               </section>
-            </div>
+            </>
+          ) : (
+            <section className="panel nurse-field-panel" aria-label="Nurse field visits today">
+              <div className="panel-heading">
+                <div>
+                  <p className="eyebrow">Palliative field operations</p>
+                  <h2>My visits today</h2>
+                  <p className="subtle">Sequential home visits sorted by clinical severity and route proximity.</p>
+                </div>
+                <label className="nurse-filter-switch">
+                  Staff:
+                  <select value={selectedNurseFilter} onChange={(e) => setSelectedNurseFilter(e.target.value)}>
+                    {roster.filter((m) => m.role !== "Duty clinician").map((m) => (
+                      <option key={m.id} value={m.name}>{m.name} ({m.serviceArea})</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="nurse-visits-summary">
+                <span><strong>{tasks.filter((t) => t.assignee === selectedNurseFilter).length}</strong> visits assigned</span>
+                <span><strong>{tasks.filter((t) => t.assignee === selectedNurseFilter && t.state === "completed").length}</strong> completed</span>
+                <span className="nurse-hub-tag">Hub: Kozhikode Medical College</span>
+              </div>
+
+              <div className="nurse-visits-list">
+                {tasks.filter((t) => t.assignee === selectedNurseFilter).length > 0 ? (
+                  tasks.filter((t) => t.assignee === selectedNurseFilter).map((task, idx) => {
+                    const matchedCase = coverageCases.find((c) => c.caseAlias === task.caseAlias);
+                    return (
+                      <article className="nurse-visit-card" key={task.id}>
+                        <div className="nurse-visit-top">
+                          <span className="visit-seq-badge">#{idx + 1}</span>
+                          <div>
+                            <h3>{task.caseAlias}</h3>
+                            <p className="visit-locality">📍 {matchedCase?.locality ?? "Calicut zone"} · ETA ~{matchedCase?.etaMinutes ?? 20}m</p>
+                          </div>
+                          <span className={`priority-pill priority-pill--${priorityCopy[task.priority].tone}`}>{priorityCopy[task.priority].label}</span>
+                        </div>
+                        <p className="visit-action"><strong>Prepared plan:</strong> {task.action}</p>
+                        <div className="visit-state-bar">
+                          <span className="microcopy">Status: <strong>{task.state.replaceAll("_", " ")}</strong></span>
+                          <div className="visit-state-buttons">
+                            <button
+                              type="button"
+                              className={`small-btn ${task.state === "assigned" ? "is-current" : ""}`}
+                              onClick={() => updateTaskVisitState(task.id, "assigned")}
+                            >
+                              Scheduled
+                            </button>
+                            <button
+                              type="button"
+                              className={`small-btn ${task.state === "en_route" ? "is-current" : ""}`}
+                              onClick={() => updateTaskVisitState(task.id, "en_route" as CareTask["state"])}
+                            >
+                              En route
+                            </button>
+                            <button
+                              type="button"
+                              className={`small-btn ${task.state === "completed" ? "is-current" : ""}`}
+                              onClick={() => updateTaskVisitState(task.id, "completed" as CareTask["state"])}
+                            >
+                              Completed
+                            </button>
+                          </div>
+                        </div>
+                        <div className="nurse-visit-actions">
+                          <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={() => {
+                              const text = encodeURIComponent(`Namaskaram. Nurse ${selectedNurseFilter} from IPM 24 Care is en route for home visit (${task.caseAlias}). ETA ~${matchedCase?.etaMinutes ?? 20} mins.`);
+                              window.open(`https://wa.me/?text=${text}`, "_blank");
+                            }}
+                          >
+                            💬 WhatsApp caregiver
+                          </button>
+                          <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={() => {
+                              const query = encodeURIComponent(`${matchedCase?.locality ?? "Kozhikode"}, Kerala`);
+                              window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, "_blank");
+                            }}
+                          >
+                            🧭 Directions
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })
+                ) : (
+                  <p className="empty-copy">No field visits are currently assigned to {selectedNurseFilter}. Assign cases from the Case Map or triage queue.</p>
+                )}
+              </div>
+            </section>
+          )}
+        </div>
             <aside className="audit-rail">
               <section className="panel compact-card">
                 <p className="eyebrow">Traceability</p><h2>Audit trail</h2>

@@ -183,5 +183,4 @@ This repository is a hackathon MVP, not a live clinical system. The next stages 
 - The current policy phrases are fictional demonstration content. IPM must supply and approve the real severity rubric, consent language, and referral pathways before any pilot.
 - The app fails closed when Google ADC or required server configuration is unavailable.
 - The repository includes recording-storage scaffolding, but real patient audio must remain disabled until IPM approves retention, deletion, encryption, access review, and incident procedures.
-- The Supabase audio migration requires a small correction before it is applied: `public.call_record` should be `public.call_recording` in the grant statement.
 - This project must never be used for autonomous diagnosis, emergency decisions, hospital referral, care dispatch, or clinical advice.

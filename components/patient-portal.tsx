@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { AuthPanel, type AuthenticatedAppUser } from "@/components/auth-panel";
 import { LiveVoiceCall } from "@/components/live-voice-call";
 import { demoClinicalPolicy } from "@/lib/clinical-policy";
+import { demoScenarios } from "@/lib/demo-data";
 import { getDemoUserForRole, portalRoles, type PortalRole } from "@/lib/demo-auth";
 import { buildIntakeTranscript, intakeQuestions, type IntakeCaseDraft } from "@/lib/intake";
 import { applySeverityPolicy, assessDemoTranscript } from "@/lib/triage";
@@ -22,8 +23,134 @@ interface PatientPortalProps {
 }
 type RecorderState = "idle" | "recording" | "processing" | "stopped" | "error";
 
+const portalContent = {
+  en: {
+    portalEyebrow: "IPM care access",
+    portalTitle: "Care desk",
+    heading: "Talk to the care team",
+    lede: "Share what is happening in your own words. A guided assistant will ask a few questions and prepare the information for a clinician to review.",
+    guidedIntake: "Guided intake",
+    startTitle: "Start a care request",
+    inAppCall: "In-app guided call",
+    inAppCallDesc: "Questions appear one at a time so you can answer clearly. You can type in Malayalam, English, or both.",
+    nameLabel: "Patient or case name",
+    phoneLabel: "Safe callback number",
+    consentText: "I understand this guided intake is not a diagnosis. I consent to sharing these answers with the care team for review.",
+    startBtn: "Start guided intake",
+    orVoice: "Or voice options",
+    liveBtn: "Start live AI call",
+    liveBtnSignIn: "Sign in for live AI call",
+    recBtn: "Start recorded AI call",
+    recBtnSignIn: "Sign in for recorded call",
+    hearQuestion: "Hear this question",
+    placeholder: "Type your answer here… (Malayalam or English)",
+    submitting: "Preparing review…",
+    continueBtn: "Continue",
+    submitBtn: "Submit for clinician review",
+    submittedHeading: "Clinician review requested",
+    submittedDesc: "Your answers were added to the review queue. No treatment, dispatch, or referral was sent automatically.",
+    startAnother: "Start another request",
+    safetyTitle: "A person reviews every request",
+    safetyBoundary: "The assistant can miss information. A clinician must review the answers and decide what happens next.",
+    dangerNotice: "If you think there is immediate danger, contact local emergency services (108 / 112) now.",
+    dontWait: "Do not wait for this website to respond to an emergency.",
+    keepPhone: "Keep your phone available for a possible callback.",
+    whatNext: "What happens next",
+    step1: "Answer three short questions.",
+    step2: "The policy engine prepares a review priority.",
+    step3: "A clinician checks the evidence before action.",
+    demoScenariosTitle: "Quick demo cases:",
+    questions: [
+      {
+        prompt: "Please tell me in your own words what is happening and what help you need today.",
+        helper: "You can write in Malayalam, English, or both.",
+      },
+      {
+        prompt: "Which option best describes the change you are calling about?",
+        helper: "Choose the closest description. A clinician will review it.",
+        options: ["It suddenly became much worse", "It has increased today", "It is stable or routine", "I am not sure"],
+      },
+      {
+        prompt: "What would you like the care team to help with?",
+        helper: "Select the most important request for this call.",
+        options: ["Clinical review", "Supplies today", "Routine follow-up", "I am not sure"],
+      },
+    ],
+  },
+  ml: {
+    portalEyebrow: "ഐ.പി.എം പാലിയേറ്റീവ് കെയർ",
+    portalTitle: "കെയർ ഡെസ്ക്",
+    heading: "കെയർ ടീമുമായി സംസാരിക്കുക",
+    lede: "നിങ്ങളുടെ അവസ്ഥ സ്വന്തം വാക്കുകളിൽ പങ്കുവെക്കുക. ഒരു സഹായി ചോദ്യങ്ങൾ ചോദിക്കുകയും ഡോക്ടറുടെ പരിശോധനയ്ക്കായി വിവരങ്ങൾ നൽകുകയും ചെയ്യും.",
+    guidedIntake: "ഗൈഡഡ് ഇൻടേക്ക്",
+    startTitle: "കെയർ അഭ്യർത്ഥന ആരംഭിക്കുക",
+    inAppCall: "ഇൻ-ആപ്പ് അസിസ്റ്റന്റ്",
+    inAppCallDesc: "ചോദ്യങ്ങൾ ഓരോന്നായി നൽകുന്നു. നിങ്ങൾക്ക് മലയാളത്തിലോ ഇംഗ്ലീഷിലോ മറുപടി നൽകാം.",
+    nameLabel: "രോഗിയുടെ അല്ലെങ്കിൽ കേസിന്റെ പേര്",
+    phoneLabel: "ബന്ധപ്പെടേണ്ട ഫോൺ നമ്പർ",
+    consentText: "ഇത് ഒരു മെഡിക്കൽ രോഗനിർണ്ണയമല്ലെന്ന് ഞാൻ മനസ്സിലാക്കുന്നു. ഈ വിവരങ്ങൾ കെയർ ടീമിന് പരിശോധനയ്ക്കായി കൈമാറാൻ സമ്മതിക്കുന്നു.",
+    startBtn: "ചോദ്യങ്ങളിലേക്ക് കടക്കുക",
+    orVoice: "വോയ്സ് ഓപ്ഷനുകൾ",
+    liveBtn: "തത്സമയ എ.ഐ കോൾ ആരംഭിക്കുക",
+    liveBtnSignIn: "തത്സമയ കോളിനായി സൈൻ ഇൻ ചെയ്യുക",
+    recBtn: "റെക്കോർഡഡ് എ.ഐ കോൾ",
+    recBtnSignIn: "റെക്കോർഡഡ് കോളിനായി സൈൻ ഇൻ ചെയ്യുക",
+    hearQuestion: "ചോദ്യം കേൾക്കുക",
+    placeholder: "നിങ്ങളുടെ മറുപടി ഇവിടെ ടൈപ്പ് ചെയ്യുക (മലയാളത്തിലോ ഇംഗ്ലീഷിലോ)…",
+    submitting: "പരിശോധന തയ്യാറാക്കുന്നു…",
+    continueBtn: "അടുത്തത്",
+    submitBtn: "ഡോക്ടറുടെ പരിശോധനയ്ക്കായി സമർപ്പിക്കുക",
+    submittedHeading: "അഭ്യർത്ഥന സമർപ്പിച്ചു",
+    submittedDesc: "നിങ്ങളുടെ മറുപടികൾ ഡ്യൂട്ടി ഡോക്ടറുടെ ലിസ്റ്റിൽ ഉൾപ്പെടുത്തി. സ്വമേധയാ മരുന്നുകളോ ഡിസ്പാച്ചോ നൽകിയിട്ടില്ല.",
+    startAnother: "മറ്റൊരു അഭ്യർത്ഥന നൽകുക",
+    safetyTitle: "എല്ലാ അഭ്യർത്ഥനകളും ഡോക്ടർ നേരിട്ട് പരിശോധിക്കും",
+    safetyBoundary: "എ.ഐ അസിസ്റ്റന്റിന് വിവരങ്ങൾ പൂർണ്ണമായി മനസ്സിലാക്കാൻ കഴിഞ്ഞെന്നു വരില്ല. എന്തു വേണമെന്ന് ഡോക്ടർ തീരുമാനിക്കും.",
+    dangerNotice: "അടിയന്തിര ജീവഹാനി സാഹചര്യമാണെങ്കിൽ ഉടൻ 108 അല്ലെങ്കിൽ പ്രാദേശിക എമർജൻസി നമ്പറിൽ ബന്ധപ്പെടുക.",
+    dontWait: "അടിയന്തര ഘട്ടങ്ങളിൽ വെബ്സൈറ്റിലെ മറുപടിക്കായി കാത്തിരിക്കരുത്.",
+    keepPhone: "കെയർ ടീം തിരിച്ചുവിളിക്കാൻ സാധ്യതയുള്ളതിനാൽ ഫോൺ കൂടെ കരുതുക.",
+    whatNext: "തുടർന്നുള്ള ഘട്ടങ്ങൾ",
+    step1: "മൂന്ന് ലളിതമായ ചോദ്യങ്ങൾക്ക് മറുപടി നൽകുക.",
+    step2: "പോളിസി എൻജിൻ ഒരു മുൻഗണനാ ശുപാർശ തയ്യാറാക്കുന്നു.",
+    step3: "ഡോക്ടർ വിവരം പരിശോധിച്ച് നടപടി ഉറപ്പാക്കുന്നു.",
+    demoScenariosTitle: "ഡെമോ പ്രീസെറ്റുകൾ:",
+    questions: [
+      {
+        prompt: "ഇന്ന് രോഗിക്ക് എന്താണ് ബുദ്ധിമുട്ട്? എന്ത് സഹായമാണ് നിങ്ങൾ പ്രതീക്ഷിക്കുന്നത്?",
+        helper: "മലയാളത്തിലോ ഇംഗ്ലീഷിലോ എഴുതാം.",
+      },
+      {
+        prompt: "ലക്ഷണങ്ങളിൽ എന്തെങ്കിലും മാറ്റം ഉണ്ടായിട്ടുണ്ടോ?",
+        helper: "യോജിച്ച വിവരണം തിരഞ്ഞെടുക്കുക. ഡോക്ടർ ഇത് പരിശോധിക്കും.",
+        options: ["പെട്ടെന്ന് വളരെ വഷളായി", "ഇന്ന് വർദ്ധിച്ചു", "മാറ്റമില്ല / സാധാരണ", "വ്യക്തമല്ല"],
+      },
+      {
+        prompt: "കെയർ ടീമിൽ നിന്ന് എന്ത് സഹായമാണ് നിങ്ങൾ പ്രതീക്ഷിക്കുന്നത്?",
+        helper: "ഏറ്റവും പ്രധാനപ്പെട്ട ആവശ്യം തിരഞ്ഞെടുക്കുക.",
+        options: ["ഡോക്ടറുടെ പരിശോധന", "ഇന്ന് തന്നെ മരുന്നുകൾ / സാധനങ്ങൾ", "സാധാരണ ഫോളോ-അപ്പ്", "വ്യക്തമല്ല"],
+      },
+    ],
+  },
+};
+
+function AudioWaveformVisualizer({ active }: { active: boolean }) {
+  return (
+    <div className={`audio-waveform ${active ? "is-active" : ""}`} aria-hidden="true">
+      <span className="wave-bar bar-1" />
+      <span className="wave-bar bar-2" />
+      <span className="wave-bar bar-3" />
+      <span className="wave-bar bar-4" />
+      <span className="wave-bar bar-5" />
+      <span className="wave-bar bar-6" />
+      <span className="wave-bar bar-7" />
+      <span className="wave-bar bar-8" />
+    </div>
+  );
+}
+
 export function PatientPortal({ role, userName, authenticated, onRoleChange, onAuthenticated, onCaseCreated, onOpenAuth, authOpen, onCloseAuth }: PatientPortalProps) {
   const [hasConsent, setHasConsent] = useState(false);
+  const [lang, setLang] = useState<"en" | "ml">("en");
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [callback, setCallback] = useState("+91 ••••• 4821");
   const [caseAlias, setCaseAlias] = useState("Meera Krishnan");
   const [started, setStarted] = useState(false);
@@ -341,6 +468,19 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
     recordingIdRef.current = null;
     recordingTranscriptRef.current = "";
   }
+  const t = portalContent[lang];
+
+  function playSyntheticSpeech(text: string) {
+    if (!text || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === "ml" ? "ml-IN" : "en-IN";
+    utterance.rate = 0.95;
+    setIsPlayingAudio(true);
+    utterance.onend = () => setIsPlayingAudio(false);
+    utterance.onerror = () => setIsPlayingAudio(false);
+    window.speechSynthesis.speak(utterance);
+  }
 
   return (
     <main className="portal-shell">
@@ -348,11 +488,19 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden="true">24</span>
           <div>
-            <p className="eyebrow">IPM care access</p>
-            <p className="brand-title">Care desk</p>
+            <p className="eyebrow">{t.portalEyebrow}</p>
+            <p className="brand-title">{t.portalTitle}</p>
           </div>
         </div>
         <div className="portal-topbar-actions">
+          <button
+            type="button"
+            className="lang-toggle-button"
+            onClick={() => setLang((current) => (current === "en" ? "ml" : "en"))}
+            aria-label="Switch between English and Malayalam"
+          >
+            {lang === "en" ? "മലയാളം" : "English"}
+          </button>
           <label className="role-switch">
             {authenticated ? "Account role" : "Demo role"}
             <select
@@ -376,8 +524,8 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
         <section className="portal-intro">
           <div>
             <p className="eyebrow">{user.subtitle}</p>
-            <h1>Talk to the care team</h1>
-            <p className="portal-lede">Share what is happening in your own words. A guided assistant will ask a few questions and prepare the information for a clinician to review.</p>
+            <h1>{t.heading}</h1>
+            <p className="portal-lede">{t.lede}</p>
           </div>
           <div className="portal-status"><span className="status-dot status-dot--safe" />{user.patientLabel}</div>
         </section>
@@ -387,8 +535,8 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
           <section className="panel call-panel" aria-labelledby="call-heading">
             <div className="panel-heading">
               <div>
-                <p className="eyebrow">Guided intake</p>
-                <h2 id="call-heading">Start a care request</h2>
+                <p className="eyebrow">{t.guidedIntake}</p>
+                <h2 id="call-heading">{t.startTitle}</h2>
               </div>
               <span className={`call-chip call-chip--${started && !hasCompleted ? "live" : "ready"}`}>{hasCompleted ? "submitted" : started ? "live" : "ready"}</span>
             </div>
@@ -417,25 +565,51 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
                       <path d="M3 12h2m3-5v10m4-13v16m4-11v6m4-3h2" />
                     </svg>
                   </span>
-                  <div><strong>In-app guided call</strong><p>Questions appear one at a time so you can answer clearly. You can type in Malayalam, English, or both.</p></div>
+                  <div><strong>{t.inAppCall}</strong><p>{t.inAppCallDesc}</p></div>
+                </div>
+                <div className="portal-presets-bar" role="group" aria-label="Demo triage presets">
+                  <span className="portal-presets-title">{t.demoScenariosTitle}</span>
+                  <div className="portal-presets-chips">
+                    {demoScenarios.map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        className="portal-preset-chip"
+                        onClick={() => {
+                          setCaseAlias(s.alias);
+                          setHasConsent(true);
+                          setAnswers({
+                            concern: s.concern,
+                            change: s.change,
+                            support: s.support,
+                          });
+                          setStarted(true);
+                          setQuestionIndex(0);
+                          setAnswer(lang === "ml" ? s.transcript : s.concern);
+                        }}
+                      >
+                        ⚡ {lang === "ml" ? s.malayalamTitle : s.title}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="field-grid portal-fields">
-                  <label>Patient or case name<input value={caseAlias} onChange={(event) => setCaseAlias(event.target.value)} /></label>
-                  <label>Safe callback number<input value={callback} onChange={(event) => setCallback(event.target.value)} /></label>
+                  <label>{t.nameLabel}<input value={caseAlias} onChange={(event) => setCaseAlias(event.target.value)} /></label>
+                  <label>{t.phoneLabel}<input value={callback} onChange={(event) => setCallback(event.target.value)} /></label>
                 </div>
-                <label className="consent-box check-row"><input type="checkbox" checked={hasConsent} onChange={(event) => setHasConsent(event.target.checked)} /><span>I understand this guided intake is not a diagnosis. I consent to sharing these answers with the care team for review.</span></label>
+                <label className="consent-box check-row"><input type="checkbox" checked={hasConsent} onChange={(event) => setHasConsent(event.target.checked)} /><span>{t.consentText}</span></label>
                 
                 <button className="primary-button portal-start portal-start-main" onClick={startIntake} disabled={!hasConsent}>
-                  Start guided intake
+                  {t.startBtn}
                 </button>
 
                 <div className="portal-alt-options">
                   <div className="portal-alt-divider">
-                    <span>Or voice options</span>
+                    <span>{t.orVoice}</span>
                   </div>
                   <div className="portal-voice-actions">
                     <button className="secondary-button portal-start-secondary" type="button" onClick={startLiveCall} disabled={!hasConsent}>
-                      {authenticated ? "Start live AI call" : "Sign in for live AI call"}
+                      {authenticated ? t.liveBtn : t.liveBtnSignIn}
                     </button>
                     <button className="secondary-button portal-start-secondary" type="button" onClick={() => {
                       if (!authenticated) {
@@ -444,7 +618,7 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
                       }
                       void startRecordedCall();
                     }} disabled={!hasConsent}>
-                      {authenticated ? "Start recorded AI call" : "Sign in for recorded call"}
+                      {authenticated ? t.recBtn : t.recBtnSignIn}
                     </button>
                   </div>
                 </div>
@@ -454,14 +628,20 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
             ) : hasCompleted ? (
               <div className="portal-complete" role="status">
                 <span className="complete-mark" aria-hidden="true">✓</span>
-                <div><p className="eyebrow">Request submitted</p><h2>Clinician review requested</h2><p>Your answers were added to the review queue. No treatment, dispatch, or referral was sent automatically.</p></div>
+                <div><p className="eyebrow">Request submitted</p><h2>{t.submittedHeading}</h2><p>{t.submittedDesc}</p></div>
                 <div className={`priority-banner priority-banner--${triage?.priority === "immediate_clinician_review" ? "critical" : triage?.priority === "urgent_review" ? "urgent" : triage?.priority === "same_day_queue" ? "same-day" : triage?.priority === "routine_queue" ? "routine" : "unknown"}`}><span className="priority-kicker">Prepared priority</span><strong>{priorityLabel}</strong><span>Policy {triage?.policyVersion}</span></div>
-                <button className="secondary-button" onClick={restart}>Start another request</button>
+                <button className="secondary-button" onClick={restart}>{t.startAnother}</button>
               </div>
             ) : recorderState !== "idle" ? (
               <div className="portal-complete">
                 <div className="assistant-message"><span className="assistant-avatar" aria-hidden="true">AI</span><div><p className="eyebrow">Recorded AI intake</p><p>{recorderState === "recording" ? "The care agent is listening and asking questions." : recorderState === "processing" ? "Audio is being transcribed and assessed." : "The recorded call is ready for review."}</p></div></div>
+                <AudioWaveformVisualizer active={recorderState === "recording" || isPlayingAudio} />
                 <p className="evidence-quote">{recordingTranscript || "No transcript has been returned yet."}</p>
+                {recordingTranscript ? (
+                  <button type="button" className="text-button" onClick={() => playSyntheticSpeech(recordingTranscript)}>
+                    {isPlayingAudio ? "🔊 Playing audio…" : "🔊 Listen to transcript"}
+                  </button>
+                ) : null}
                 {recorderState === "recording" ? <button className="danger-button" type="button" onClick={() => void stopRecordedCall()}>Stop and submit call</button> : null}
                 {recordingMessage ? <p className="microcopy">{recordingMessage}</p> : null}
               </div>
@@ -469,12 +649,12 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
               <>
                 <div className="intake-progress"><span>Question {progress}</span><span>{Math.round(((questionIndex + 1) / intakeQuestions.length) * 100)}%</span></div>
                 <div className="progress-track"><span style={{ width: `${((questionIndex + 1) / intakeQuestions.length) * 100}%` }} /></div>
-                <div className="assistant-message"><span className="assistant-avatar" aria-hidden="true">AI</span><div><p className="eyebrow">Care intake assistant</p><p>{question.prompt}</p></div></div>
-                <button className="text-button speak-button" onClick={speakQuestion} type="button">Hear this question</button>
+                <div className="assistant-message"><span className="assistant-avatar" aria-hidden="true">AI</span><div><p className="eyebrow">Care intake assistant</p><p>{t.questions[questionIndex]?.prompt ?? question.prompt}</p></div></div>
+                <button className="text-button speak-button" onClick={speakQuestion} type="button">{t.hearQuestion}</button>
                 <form onSubmit={submitAnswer} className="answer-form">
-                  {question.kind === "text" ? <textarea autoFocus value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="Type your answer here…" rows={5} aria-label={question.label} /> : <div className="choice-grid" role="group" aria-label={question.label}>{question.options?.map((option) => <button key={option} type="button" className={`choice-button ${answer === option ? "is-selected" : ""}`} onClick={() => chooseAnswer(option)} aria-pressed={answer === option}>{option}</button>)}</div>}
-                  <p className="microcopy">{question.helper}</p>
-                  <button className="primary-button" type="submit" disabled={!answer.trim() || isAssessing}>{isAssessing ? "Preparing review…" : questionIndex === intakeQuestions.length - 1 ? "Submit for clinician review" : "Continue"}</button>
+                  {question.kind === "text" ? <textarea autoFocus value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder={t.placeholder} rows={5} aria-label={question.label} /> : <div className="choice-grid" role="group" aria-label={question.label}>{(t.questions[questionIndex]?.options ?? question.options)?.map((option) => <button key={option} type="button" className={`choice-button ${answer === option ? "is-selected" : ""}`} onClick={() => chooseAnswer(option)} aria-pressed={answer === option}>{option}</button>)}</div>}
+                  <p className="microcopy">{t.questions[questionIndex]?.helper ?? question.helper}</p>
+                  <button className="primary-button" type="submit" disabled={!answer.trim() || isAssessing}>{isAssessing ? t.submitting : questionIndex === intakeQuestions.length - 1 ? t.submitBtn : t.continueBtn}</button>
                 </form>
               </>
             )}
@@ -484,13 +664,13 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
           <aside className="portal-side">
             <section className="panel safety-panel">
               <p className="eyebrow">Safety boundary</p>
-              <h2>A person reviews every request</h2>
-              <p>The assistant can miss information. A clinician must review the answers and decide what happens next.</p>
-              <ul className="safety-list"><li>If you think there is immediate danger, contact local emergency services now.</li><li>Do not wait for this website to respond to an emergency.</li><li>Keep your phone available for a possible callback.</li></ul>
+              <h2>{t.safetyTitle}</h2>
+              <p>{t.safetyBoundary}</p>
+              <ul className="safety-list"><li>{t.dangerNotice}</li><li>{t.dontWait}</li><li>{t.keepPhone}</li></ul>
             </section>
             <section className="panel steps-panel">
-              <p className="eyebrow">What happens next</p>
-              <ol className="steps-list"><li><span>01</span>Answer three short questions.</li><li><span>02</span>The policy engine prepares a review priority.</li><li><span>03</span>A clinician checks the evidence before action.</li></ol>
+              <p className="eyebrow">{t.whatNext}</p>
+              <ol className="steps-list"><li><span>01</span>{t.step1}</li><li><span>02</span>{t.step2}</li><li><span>03</span>{t.step3}</li></ol>
             </section>
           </aside>
         </div>
