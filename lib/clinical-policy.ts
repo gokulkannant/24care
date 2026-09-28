@@ -15,19 +15,19 @@ export const demoClinicalPolicy: ClinicalPolicy = {
       id: "demo_immediate_review",
       label: "Scripted immediate-review cue",
       description: "A fictional training cue used only to demonstrate an alert workflow.",
-      patterns: ["suddenly much worse", "need help now", "പെട്ടെന്ന് വഷളായി"],
+      patterns: ["suddenly much worse", "need help now", "പെട്ടെന്ന് വഷളായി", "breakthrough pain", "escalated severely", "കഠിനമായ വേദന", "intolerable"],
     },
     {
       id: "demo_urgent_review",
       label: "Scripted urgent-review cue",
       description: "A fictional training cue used only to demonstrate clinician review.",
-      patterns: ["pain has increased", "urgent review", "വേദന കൂടുന്നു"],
+      patterns: ["pain has increased", "urgent review", "വേദന കൂടുന്നു", "catheter is blocked", "catheter", "കത്തീറ്റർ തടസ്സം", "യൂറിൻ"],
     },
     {
       id: "demo_same_day_support",
       label: "Scripted same-day support cue",
       description: "A fictional coordination cue used only to demonstrate task creation.",
-      patterns: ["supplies are low", "need supplies today", "സാധനങ്ങൾ തീരുന്നു"],
+      patterns: ["supplies are low", "need supplies today", "സാധനങ്ങൾ തീരുന്നു", "dressing supplies", "ഡ്രസ്സിംഗ് സാധനങ്ങൾ", "ഗാസ് റോൾ"],
     },
     {
       id: "demo_routine_follow_up",

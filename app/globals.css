@@ -251,6 +251,106 @@ h3 { font-size: var(--text-base); letter-spacing: 0; }
   background: #d8433d;
 }
 
+
+/* Sidebar Incoming Call Queue */
+.sidebar-queue-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sidebar-queue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+}
+.sidebar-queue-title {
+  color: #7da592;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.sidebar-queue-badge {
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #c5dfd2;
+  font-size: 10px;
+  font-weight: 800;
+}
+.sidebar-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sidebar-queue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #c9e0d3;
+  text-align: left;
+  cursor: pointer;
+  transition: all 130ms ease;
+}
+.sidebar-queue-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(2px);
+}
+.sidebar-queue-card.is-selected {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #177a67;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.queue-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.queue-card-name {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.queue-urgency-pill {
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.queue-urgency-pill--critical { color: #ffffff; background: #c23832; }
+.queue-urgency-pill--urgent { color: #ffffff; background: #c07a1b; }
+.queue-urgency-pill--routine { color: #ffffff; background: #2f8457; }
+.queue-card-snippet {
+  margin: 0;
+  color: #8dafa0;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.queue-card-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #638575;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 1px;
+}
 .sidebar-footnote {
   margin-top: auto;
   display: grid;
@@ -1252,6 +1352,111 @@ input::placeholder, textarea::placeholder { color: #8a9692; }
   color: #c07a1b; font-size: var(--text-2xs); font-weight: 800;
 }
 
+
+/* Active Caller Quick Status in Caller Details Card */
+.caller-quick-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  background: #f4faf6;
+  border: 1px solid #d5e9dc;
+}
+.active-patient-badge {
+  color: var(--forest-deep);
+  font-size: 12px;
+  font-weight: 750;
+}
+.active-zone-badge {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Standby CDS Panel */
+.cds-standby-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cds-standby-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #f5f9f6;
+  border: 1px solid #d8e8de;
+}
+.cds-pulse-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #176c5b;
+  box-shadow: 0 0 0 3px rgba(23, 108, 91, 0.2);
+}
+.cds-standby-banner strong {
+  display: block;
+  color: #17382e;
+  font-size: 12.5px;
+  margin-bottom: 2px;
+}
+.cds-standby-banner p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+.cds-standby-rules-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #fafbfb;
+  border: 1px solid #e3ebe6;
+}
+.cds-standby-subtitle {
+  margin: 0;
+  color: #557266;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.cds-tiers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cds-tiers-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  color: #41594e;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.cds-tiers-list strong {
+  color: var(--forest-deep);
+  font-size: 11.5px;
+}
+.tier-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.tier-dot--critical { background: var(--critical); }
+.tier-dot--urgent { background: #d7962f; }
+.tier-dot--same-day { background: #2f8496; }
+.tier-dot--routine { background: #5e9a70; }
 /* Patient portal quick presets */
 .portal-presets-bar {
   display: flex; flex-direction: column; gap: 7px;

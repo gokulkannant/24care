@@ -692,6 +692,41 @@ export function CareConsole() {
           ))}
         </nav>
 
+        <div className="sidebar-queue-section">
+          <div className="sidebar-queue-header">
+            <span className="sidebar-queue-title">Incoming Call Queue</span>
+            <span className="sidebar-queue-badge">{demoScenarios.length}</span>
+          </div>
+          <div className="sidebar-queue-list">
+            {demoScenarios.map((scenario) => {
+              const isActive = caseAlias === scenario.alias;
+              return (
+                <button
+                  key={scenario.id}
+                  type="button"
+                  className={`sidebar-queue-card ${isActive ? "is-selected" : ""}`}
+                  onClick={() => {
+                    setView("intake");
+                    loadDemoScenario(scenario);
+                  }}
+                  title={`Load caller: ${scenario.alias}`}
+                >
+                  <div className="queue-card-top">
+                    <span className="queue-card-name">{scenario.alias}</span>
+                    <span className={`queue-urgency-pill queue-urgency-pill--${scenario.id === "severe-pain" ? "critical" : scenario.id === "catheter-block" ? "urgent" : "routine"}`}>
+                      {scenario.id === "severe-pain" ? "Acute" : scenario.id === "catheter-block" ? "Urgent" : "Routine"}
+                    </span>
+                  </div>
+                  <p className="queue-card-snippet">{scenario.title}</p>
+                  <div className="queue-card-meta">
+                    <span>📍 {scenario.locality.split(" ")[0]}</span>
+                    <span>Malayalam + EN</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="sidebar-footnote">
           <div className="sidebar-hub-status">
             <span className="status-dot status-dot--safe" />
@@ -802,26 +837,9 @@ export function CareConsole() {
                   </div>
                   <span className={`call-chip call-chip--${callState}`}>{callState === "live" ? `Live · ${formatClock(secondsLive)}` : callState}</span>
                 </div>
-                <div className="clinical-scenarios-bar" role="group" aria-label="Pre-loaded clinical test cases">
-                  <div className="scenarios-bar-header">
-                    <span className="scenarios-bar-title">Clinical sample scenarios</span>
-                    <span className="scenarios-bar-hint">Select a validated patient intake to evaluate policy rules:</span>
-                  </div>
-                  <div className="scenarios-bar-chips">
-                    {demoScenarios.map((scenario) => (
-                      <button
-                        key={scenario.id}
-                        type="button"
-                        className="scenario-pill-btn"
-                        onClick={() => loadDemoScenario(scenario)}
-                        title={scenario.priorityNote}
-                      >
-                        <span className="pill-badge">{scenario.id === "severe-pain" ? "Acute" : scenario.id === "catheter-block" ? "Urgent" : "Routine"}</span>
-                        <span className="pill-name">{scenario.title}</span>
-                        <span className="pill-lang-tag">മലയാളം</span>
-                      </button>
-                    ))}
-                  </div>
+                <div className="caller-quick-status">
+                  <span className="active-patient-badge">Active Case: {caseAlias}</span>
+                  <span className="active-zone-badge">📍 Kozhikode District</span>
                 </div>
                 <div className="field-grid">
                   <label>
@@ -925,53 +943,67 @@ export function CareConsole() {
                 </div>
 
                 {!triage ? (
-                  <div className="cds-pending-banner">
-                    <span className="cds-pending-dot" aria-hidden="true" />
-                    <div>
-                      <strong>Awaiting Evidence</strong>
-                      <p>Add transcript turns or select a clinical case to evaluate urgency.</p>
+                  <div className="cds-standby-view">
+                    <div className="cds-standby-banner">
+                      <span className="cds-pulse-dot" aria-hidden="true" />
+                      <div>
+                        <strong>Rules Engine Active</strong>
+                        <p>12 IPM clinical safety rules loaded and monitoring. Speech turns will be triaged automatically.</p>
+                      </div>
+                    </div>
+
+                    <div className="cds-standby-rules-preview">
+                      <p className="cds-standby-subtitle">Triage Urgency Tiers</p>
+                      <ul className="cds-tiers-list">
+                        <li><span className="tier-dot tier-dot--critical" /><strong>Immediate Clinician Review:</strong> Breakthrough pain, acute distress</li>
+                        <li><span className="tier-dot tier-dot--urgent" /><strong>Urgent Review (2h):</strong> Catheter block, retention</li>
+                        <li><span className="tier-dot tier-dot--same-day" /><strong>Same-Day Nursing:</strong> Wound care, supply delivery</li>
+                        <li><span className="tier-dot tier-dot--routine" /><strong>Routine Follow-up:</strong> Stable palliative check-in</li>
+                      </ul>
                     </div>
                   </div>
                 ) : (
-                  <div className={`priority-banner priority-banner--${currentPriority.tone}`}>
-                    <span className="priority-kicker">Recommended Priority</span>
-                    <strong>{currentPriority.label}</strong>
-                    <span className="priority-rule-id">Matched Rule: {triage.ruleId}</span>
-                  </div>
-                )}
+                  <>
+                    <div className={`priority-banner priority-banner--${currentPriority.tone}`}>
+                      <span className="priority-kicker">Recommended Priority</span>
+                      <strong>{currentPriority.label}</strong>
+                      <span className="priority-rule-id">Matched Rule: {triage.ruleId}</span>
+                    </div>
 
-                {isAssessing ? <p className="quiet-loading">Evaluating clinical ruleset…</p> : null}
+                    {isAssessing ? <p className="quiet-loading">Evaluating clinical ruleset…</p> : null}
 
-                <dl className="analysis-details">
-                  <div>
-                    <dt>Guidance action</dt>
-                    <dd>{triage?.action ?? "Capture caller concern to formulate triage action."}</dd>
-                  </div>
-                  <div>
-                    <dt>Routing destination</dt>
-                    <dd>{triage?.destinationType ?? "Duty clinician review queue"}</dd>
-                  </div>
-                  <div>
-                    <dt>Algorithm uncertainty</dt>
-                    <dd>
-                      <div className="uncertainty-indicator">
-                        <span className={`uncertainty-tag uncertainty-tag--${assessment?.uncertainty ?? "high"}`}>
-                          {assessment?.uncertainty ?? "High"}
-                        </span>
-                        <div className="uncertainty-meter" aria-hidden="true">
-                          <span className={`meter-bar ${(assessment?.uncertainty ?? "high") === "high" ? "is-filled" : ""}`} />
-                          <span className={`meter-bar ${(assessment?.uncertainty ?? "high") === "moderate" || (assessment?.uncertainty ?? "high") === "high" ? "is-filled" : ""}`} />
-                          <span className="meter-bar" />
-                        </div>
+                    <dl className="analysis-details">
+                      <div>
+                        <dt>Guidance action</dt>
+                        <dd>{triage.action}</dd>
                       </div>
-                    </dd>
-                  </div>
-                </dl>
+                      <div>
+                        <dt>Routing destination</dt>
+                        <dd>{triage.destinationType}</dd>
+                      </div>
+                      <div>
+                        <dt>Algorithm uncertainty</dt>
+                        <dd>
+                          <div className="uncertainty-indicator">
+                            <span className={`uncertainty-tag uncertainty-tag--${assessment?.uncertainty ?? "moderate"}`}>
+                              {assessment?.uncertainty ?? "Moderate"}
+                            </span>
+                            <div className="uncertainty-meter" aria-hidden="true">
+                              <span className={`meter-bar ${(assessment?.uncertainty ?? "low") !== "low" ? "is-filled" : ""}`} />
+                              <span className={`meter-bar ${(assessment?.uncertainty ?? "moderate") === "high" ? "is-filled" : ""}`} />
+                              <span className="meter-bar" />
+                            </div>
+                          </div>
+                        </dd>
+                      </div>
+                    </dl>
 
-                <button className="primary-action-btn full-width" onClick={notifyClinician} disabled={!triage || alerted}>
-                  {alerted ? "✓ Duty Clinician Alerted" : "Prepare Clinician Alert →"}
-                </button>
-                <p className="microcopy">Training sandbox mode: creates reviewable draft without external dispatch.</p>
+                    <button className="primary-action-btn full-width" onClick={notifyClinician} disabled={alerted}>
+                      {alerted ? "✓ Duty Clinician Alerted" : "Prepare Clinician Alert →"}
+                    </button>
+                    <p className="microcopy">Training sandbox mode: creates reviewable draft without external dispatch.</p>
+                  </>
+                )}
               </section>
 
               <section className="analysis-card compact-card cds-evidence-card">
