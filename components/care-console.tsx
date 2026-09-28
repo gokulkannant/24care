@@ -657,10 +657,12 @@ export function CareConsole() {
     <main className="app-shell">
       <aside className="sidebar" aria-label="Care workspace navigation">
         <div className="brand-lockup">
-          <span className="brand-mark" aria-hidden="true">24</span>
-          <div>
-            <p className="eyebrow">IPM care workflow</p>
-            <p className="brand-title">Care desk</p>
+          <div className="brand-mark" aria-hidden="true">
+            <span className="brand-mark-symbol">24</span>
+          </div>
+          <div className="brand-text">
+            <p className="eyebrow">IPM Palliative Care</p>
+            <p className="brand-title">Triage Desk</p>
           </div>
         </div>
 
@@ -691,16 +693,26 @@ export function CareConsole() {
         </nav>
 
         <div className="sidebar-footnote">
-          <span className="status-dot status-dot--safe" />
-          <p>Training workspace<br />No clinical policy loaded</p>
+          <div className="sidebar-hub-status">
+            <span className="status-dot status-dot--safe" />
+            <span>Calicut Central Hub</span>
+          </div>
+          <p className="sidebar-hub-sub">Active Shift · 19:00–07:00 IST</p>
         </div>
       </aside>
 
       <section className="workspace">
         <header className="topbar">
-          <div>
-            <p className="eyebrow">IPM / 24×7 support</p>
-            <h1>{navItems.find((item) => item.id === view)?.title}</h1>
+          <div className="topbar-title-group">
+            <div className="topbar-breadcrumb">
+              <span className="breadcrumb-root">IPM Desk</span>
+              <span className="breadcrumb-sep">/</span>
+              <span className="breadcrumb-current">{navItems.find((item) => item.id === view)?.title}</span>
+            </div>
+            <div className="topbar-heading-row">
+              <h1>{navItems.find((item) => item.id === view)?.title}</h1>
+              <span className="topbar-live-tag">Operational</span>
+            </div>
           </div>
           <div className="topbar-actions">
             <button
@@ -711,26 +723,33 @@ export function CareConsole() {
               aria-pressed={isOfflineSimulated}
             >
               <span className="network-dot" aria-hidden="true" />
-              {isOfflineSimulated ? "Offline cache active" : "Cloud sync online"}
+              {isOfflineSimulated ? "Offline Queue Active" : "Synced to Cloud"}
             </button>
-            <span className="demo-badge">Demo only</span>
-            <label className="role-switch">
-              Role
-              <select value={role} onChange={(event) => void changeRole(event.target.value as PortalRole)}>
+            <div className="topbar-role-selector">
+              <span className="topbar-role-label">Role:</span>
+              <select value={role} onChange={(event) => void changeRole(event.target.value as PortalRole)} aria-label="Active system role">
                 <option value="clinician">Clinician</option>
                 <option value="patient">Patient</option>
                 <option value="caretaker">Caretaker</option>
               </select>
-            </label>
-            <button className="text-button" onClick={() => setAuthOpen(true)}>{authenticated ? "Live account" : "Sign in"}</button>
-            <button className="text-button" onClick={resetDemo}>Reset demo</button>
-            <span className="user-chip" aria-label={`Signed in as ${currentUserName}`}>{currentUserName.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
+            </div>
+            <div className="topbar-divider" aria-hidden="true" />
+            <button className="topbar-btn" type="button" onClick={() => setAuthOpen(true)}>{authenticated ? "Live account" : "Sign in"}</button>
+            <button className="topbar-btn topbar-btn--muted" type="button" onClick={resetDemo}>Reset demo</button>
+            <div className="user-profile-badge" title={`Signed in as ${currentUserName}`}>
+              <span className="user-chip">{currentUserName.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
+              <span className="user-profile-name">{currentUserName.startsWith("Dr.") ? currentUserName.split(" ").slice(0, 2).join(" ") : currentUserName.split(" ")[0]}</span>
+            </div>
           </div>
         </header>
 
         <div className="policy-notice" role="note">
-          <span aria-hidden="true">!</span>
-          <p><strong>Training safety boundary.</strong> This workspace uses fictional policy signals and can only prepare a clinician-reviewed case. It cannot diagnose, dispatch, or refer a patient.</p>
+          <div className="policy-notice-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+              <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm1 8H7v-5h2v5z" />
+            </svg>
+          </div>
+          <p><strong>Clinical Decision Support Advisory.</strong> This workspace uses rule-based clinical safety signals to assist duty clinicians. Final triage classification, prescription, and field dispatch require clinician sign-off.</p>
         </div>
         {authOpen ? <AuthPanel onAuthenticated={handleAuthenticated} onClose={() => setAuthOpen(false)} /> : null}
         {caregiverNotification?.open ? (
@@ -783,30 +802,34 @@ export function CareConsole() {
                   </div>
                   <span className={`call-chip call-chip--${callState}`}>{callState === "live" ? `Live · ${formatClock(secondsLive)}` : callState}</span>
                 </div>
-                <div className="demo-scenarios-bar" role="group" aria-label="One-click demo triage scenarios">
-                  <span className="demo-scenarios-title">One-click demo cases:</span>
-                  <div className="demo-scenarios-list">
+                <div className="clinical-scenarios-bar" role="group" aria-label="Pre-loaded clinical test cases">
+                  <div className="scenarios-bar-header">
+                    <span className="scenarios-bar-title">Clinical sample scenarios</span>
+                    <span className="scenarios-bar-hint">Select a validated patient intake to evaluate policy rules:</span>
+                  </div>
+                  <div className="scenarios-bar-chips">
                     {demoScenarios.map((scenario) => (
                       <button
                         key={scenario.id}
                         type="button"
-                        className="scenario-chip"
+                        className="scenario-pill-btn"
                         onClick={() => loadDemoScenario(scenario)}
                         title={scenario.priorityNote}
                       >
-                        <span className="scenario-chip-tag">⚡ {scenario.malayalamTitle}</span>
-                        <span className="scenario-chip-name">{scenario.title}</span>
+                        <span className="pill-badge">{scenario.id === "severe-pain" ? "Acute" : scenario.id === "catheter-block" ? "Urgent" : "Routine"}</span>
+                        <span className="pill-name">{scenario.title}</span>
+                        <span className="pill-lang-tag">മലയാളം</span>
                       </button>
                     ))}
                   </div>
                 </div>
                 <div className="field-grid">
                   <label>
-                    Case alias
+                    <span className="field-label">Case alias / identifier</span>
                     <input value={caseAlias} onChange={(event) => setCaseAlias(event.target.value)} />
                   </label>
                   <label>
-                    Caller relationship
+                    <span className="field-label">Caller relationship</span>
                     <select value={callerRelationship} onChange={(event) => setCallerRelationship(event.target.value)}>
                       <option>Caregiver</option>
                       <option>Patient</option>
@@ -815,30 +838,35 @@ export function CareConsole() {
                     </select>
                   </label>
                   <label>
-                    Callback number
+                    <span className="field-label">Callback telephone</span>
                     <input value={callback} onChange={(event) => setCallback(event.target.value)} />
                   </label>
                 </div>
                 <div className="consent-box">
                   <label className="check-row">
                     <input type="checkbox" checked={hasCallConsent} onChange={(event) => setHasCallConsent(event.target.checked)} />
-                    <span>I have read the IPM-approved call notice and obtained consent for live transcription.</span>
+                    <span>I confirm verbal call consent for real-time AI transcription in accordance with IPM care protocol.</span>
                   </label>
                   <label className="check-row">
                     <input type="checkbox" checked={hasRecordingConsent} onChange={(event) => setHasRecordingConsent(event.target.checked)} />
-                    <span>Caller also agreed to recording. <strong>Recording remains disabled until IPM sets a retention policy.</strong></span>
+                    <span>Caller opted into encrypted audio archiving (requires IPM retention policy approval).</span>
                   </label>
                 </div>
                 <div className="call-controls">
                   {callState !== "live" ? (
-                    <button className="primary-button" onClick={startIntake} disabled={!hasCallConsent}>
-                      Start consented intake
+                    <button className="primary-action-btn" onClick={startIntake} disabled={!hasCallConsent}>
+                      <span className="btn-icon">🎙️</span> Start Live Intake
                     </button>
                   ) : (
-                    <button className="danger-button" onClick={() => void stopIntake()}>Stop intake</button>
+                    <button className="danger-button" onClick={() => void stopIntake()}>Stop Session</button>
                   )}
-                  <button className="secondary-button" onClick={addFullDemoScenario} disabled={!hasCallConsent}>Add demo turns</button>
-                  <span className="quiet-badge">{callTransport === "livekit" ? "LiveKit audio" : "Demo local audio"}</span>
+                  <button className="secondary-action-btn" onClick={addFullDemoScenario} disabled={!hasCallConsent}>
+                    + Append Evidence Turns
+                  </button>
+                  <div className="transport-badge">
+                    <span className="transport-dot" aria-hidden="true" />
+                    <span>{callTransport === "livekit" ? "LiveKit Audio" : "Local Audio Simulation"}</span>
+                  </div>
                   <span className="provider-state" aria-live="polite">{providerMessage}</span>
                 </div>
               </section>
@@ -887,37 +915,85 @@ export function CareConsole() {
             </div>
 
             <aside className="analysis-rail" aria-label="Suggested severity analysis">
-              <section className="analysis-card">
-                <p className="eyebrow">Policy result</p>
-                <div className={`priority-banner priority-banner--${currentPriority.tone}`}>
-                  <span className="priority-kicker">Possible priority</span>
-                  <strong>{currentPriority.label}</strong>
-                  <span>Policy {demoClinicalPolicy.version}</span>
+              <section className="analysis-card cds-card">
+                <div className="cds-card-header">
+                  <div>
+                    <p className="eyebrow">Decision Support</p>
+                    <h2>Policy Assessment</h2>
+                  </div>
+                  <span className="cds-version-badge">v0.1 · IPM Ruleset</span>
                 </div>
-                {isAssessing ? <p className="quiet-loading">Checking the current fictional policy…</p> : null}
+
+                {!triage ? (
+                  <div className="cds-pending-banner">
+                    <span className="cds-pending-dot" aria-hidden="true" />
+                    <div>
+                      <strong>Awaiting Evidence</strong>
+                      <p>Add transcript turns or select a clinical case to evaluate urgency.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`priority-banner priority-banner--${currentPriority.tone}`}>
+                    <span className="priority-kicker">Recommended Priority</span>
+                    <strong>{currentPriority.label}</strong>
+                    <span className="priority-rule-id">Matched Rule: {triage.ruleId}</span>
+                  </div>
+                )}
+
+                {isAssessing ? <p className="quiet-loading">Evaluating clinical ruleset…</p> : null}
+
                 <dl className="analysis-details">
-                  <div><dt>Action</dt><dd>{triage?.action ?? "Add a transcripted concern to create a reviewable draft."}</dd></div>
-                  <div><dt>Destination</dt><dd>{triage?.destinationType ?? "Duty clinician review queue"}</dd></div>
-                  <div><dt>Uncertainty</dt><dd><span className={`uncertainty uncertainty--${assessment?.uncertainty ?? "high"}`}>{assessment?.uncertainty ?? "high"}</span></dd></div>
+                  <div>
+                    <dt>Guidance action</dt>
+                    <dd>{triage?.action ?? "Capture caller concern to formulate triage action."}</dd>
+                  </div>
+                  <div>
+                    <dt>Routing destination</dt>
+                    <dd>{triage?.destinationType ?? "Duty clinician review queue"}</dd>
+                  </div>
+                  <div>
+                    <dt>Algorithm uncertainty</dt>
+                    <dd>
+                      <div className="uncertainty-indicator">
+                        <span className={`uncertainty-tag uncertainty-tag--${assessment?.uncertainty ?? "high"}`}>
+                          {assessment?.uncertainty ?? "High"}
+                        </span>
+                        <div className="uncertainty-meter" aria-hidden="true">
+                          <span className={`meter-bar ${(assessment?.uncertainty ?? "high") === "high" ? "is-filled" : ""}`} />
+                          <span className={`meter-bar ${(assessment?.uncertainty ?? "high") === "moderate" || (assessment?.uncertainty ?? "high") === "high" ? "is-filled" : ""}`} />
+                          <span className="meter-bar" />
+                        </div>
+                      </div>
+                    </dd>
+                  </div>
                 </dl>
-                <button className="primary-button full-width" onClick={notifyClinician} disabled={!triage || alerted}>
-                  {alerted ? "Duty clinician alerted" : "Prepare clinician alert"}
+
+                <button className="primary-action-btn full-width" onClick={notifyClinician} disabled={!triage || alerted}>
+                  {alerted ? "✓ Duty Clinician Alerted" : "Prepare Clinician Alert →"}
                 </button>
-                <p className="microcopy">This sends no external message in demo mode. It opens a reviewable draft.</p>
+                <p className="microcopy">Training sandbox mode: creates reviewable draft without external dispatch.</p>
               </section>
 
-              <section className="analysis-card compact-card">
-                <div className="panel-heading"><h2>Why this result</h2><span className="rule-id">{triage?.ruleId ?? "awaiting-evidence"}</span></div>
+              <section className="analysis-card compact-card cds-evidence-card">
+                <div className="panel-heading">
+                  <div>
+                    <p className="eyebrow">Matched signals</p>
+                    <h2>Rule rationale</h2>
+                  </div>
+                  <span className="rule-id">{triage?.ruleId ?? "awaiting-evidence"}</span>
+                </div>
                 {triage?.matchedSignals.length ? (
                   <ul className="evidence-list">
                     {triage.matchedSignals.map((signal) => (
                       <li key={signal.signalId}>
-                        <strong>{signal.label}</strong>
-                        <span>“{signal.excerpts.join("” · “")}”</span>
+                        <strong className="signal-label">{signal.label}</strong>
+                        <span className="signal-quote">“{signal.excerpts.join("” · “")}”</span>
                       </li>
                     ))}
                   </ul>
-                ) : <p className="empty-copy">No fictional policy signal is present. The case must remain unclassified until a clinician reviews more information.</p>}
+                ) : (
+                  <p className="empty-copy">No fictional policy signals detected yet. Triage remains unclassified until symptoms or concerns are provided.</p>
+                )}
               </section>
             </aside>
           </section>
