@@ -3,6 +3,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CoverageMap, type CoverageCase } from "@/components/coverage-map";
 import { AuthPanel, type AuthenticatedAppUser } from "@/components/auth-panel";
+import { PatientClinicalCard } from "@/components/patient-clinical-card";
+import { CallAudioPlayer } from "@/components/call-audio-player";
+import {
+  PhoneCall,
+  FileCheck,
+  MapPin,
+  Users,
+  BarChart3,
+  CheckCircle2,
+  AlertTriangle,
+  Compass,
+  MessageSquare,
+  Mic,
+  Plus,
+  Activity,
+  Radio,
+} from "lucide-react";
 import { demoClinicalPolicy } from "@/lib/clinical-policy";
 import { getDemoUserForRole, type PortalRole } from "@/lib/demo-auth";
 import { type IntakeCaseDraft } from "@/lib/intake";
@@ -50,6 +67,12 @@ const navItems: Array<{ id: View; eyebrow: string; title: string }> = [
   { id: "benchmark", eyebrow: "04", title: "Provider benchmark" },
 ];
 
+const navIcons: Record<View, React.ComponentType<{ size?: number; className?: string }>> = {
+  intake: PhoneCall,
+  review: FileCheck,
+  roster: MapPin,
+  benchmark: BarChart3,
+};
 function formatClock(seconds: number) {
   const minutes = Math.floor(seconds / 60).toString().padStart(2, "0");
   const remaining = (seconds % 60).toString().padStart(2, "0");
@@ -204,6 +227,11 @@ export function CareConsole() {
   const transcript = useMemo(
     () => segments.filter((segment) => segment.status === "final").map((segment) => segment.text).join(" "),
     [segments],
+  );
+
+  const activeScenario = useMemo(
+    () => demoScenarios.find((s) => s.alias === caseAlias) ?? null,
+    [caseAlias]
   );
 
   const activeBenchmark = illustrativeBenchmarks.find((benchmark) => benchmark.provider === selectedProvider)!;
@@ -681,6 +709,10 @@ export function CareConsole() {
               }}
               aria-current={view === item.id ? "page" : undefined}
             >
+              {(() => {
+                const Icon = navIcons[item.id];
+                return <Icon size={14} className="nav-item-icon" />;
+              })()}
               <span className="nav-item-eyebrow">{item.eyebrow}</span>
               <span className="nav-item-label">{item.title}</span>
               {item.id === "review" && (alerted || reviewQueue.length > 0) ? (
@@ -829,6 +861,19 @@ export function CareConsole() {
         {view === "intake" && (
           <section className="intake-layout" aria-label="Live call intake">
             <div className="intake-main">
+              <PatientClinicalCard
+                scenario={activeScenario}
+                alias={caseAlias}
+                relationship={callerRelationship}
+                callback={callback}
+                priority={triage?.priority ?? "insufficient_information"}
+                triageAction={triage?.action}
+                matchedRuleId={triage?.ruleId}
+                onDispatchAction={(actionText) => {
+                  addAudit("Duty clinician", "Protocol Action", actionText);
+                }}
+              />
+
               <section className="panel case-panel">
                 <div className="panel-heading">
                   <div>
@@ -839,7 +884,9 @@ export function CareConsole() {
                 </div>
                 <div className="caller-quick-status">
                   <span className="active-patient-badge">Active Case: {caseAlias}</span>
-                  <span className="active-zone-badge">📍 Kozhikode District</span>
+                  <span className="active-zone-badge">
+                    <MapPin size={11} /> Kozhikode District
+                  </span>
                 </div>
                 <div className="field-grid">
                   <label>
@@ -873,13 +920,13 @@ export function CareConsole() {
                 <div className="call-controls">
                   {callState !== "live" ? (
                     <button className="primary-action-btn" onClick={startIntake} disabled={!hasCallConsent}>
-                      <span className="btn-icon">🎙️</span> Start Live Intake
+                      <Mic size={14} className="btn-icon" /> Start Live Intake
                     </button>
                   ) : (
                     <button className="danger-button" onClick={() => void stopIntake()}>Stop Session</button>
                   )}
                   <button className="secondary-action-btn" onClick={addFullDemoScenario} disabled={!hasCallConsent}>
-                    + Append Evidence Turns
+                    <Plus size={14} /> Append Evidence Turns
                   </button>
                   <div className="transport-badge">
                     <span className="transport-dot" aria-hidden="true" />
@@ -897,6 +944,7 @@ export function CareConsole() {
                   </div>
                   <span className="language-chip">Malayalam + English</span>
                 </div>
+                <CallAudioPlayer transcript={transcript} isLive={callState === "live"} secondsLive={secondsLive} />
                 <div className="transcript-feed" aria-live="polite" aria-label="Transcript updates">
                   {segments.length === 0 ? (
                     <div className="empty-transcript">
@@ -1116,7 +1164,7 @@ export function CareConsole() {
                   aria-selected={operationsTab === "map_coverage"}
                   onClick={() => setOperationsTab("map_coverage")}
                 >
-                  🗺️ Case map & duty coverage
+                  <MapPin size={13} /> Case Map & Duty Coverage
                 </button>
                 <button
                   role="tab"
@@ -1125,7 +1173,7 @@ export function CareConsole() {
                   aria-selected={operationsTab === "nurse_visits"}
                   onClick={() => setOperationsTab("nurse_visits")}
                 >
-                  👩⚕️ Nurse field view (My visits today)
+                  <Users size={13} /> Field Nurse Schedule
                 </button>
               </div>
 
@@ -1249,7 +1297,7 @@ export function CareConsole() {
                               window.open(`https://wa.me/?text=${text}`, "_blank");
                             }}
                           >
-                            💬 WhatsApp caregiver
+                            <MessageSquare size={13} /> WhatsApp Caregiver
                           </button>
                           <button
                             type="button"
@@ -1259,7 +1307,7 @@ export function CareConsole() {
                               window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, "_blank");
                             }}
                           >
-                            🧭 Directions
+                            <Compass size={13} /> Route Directions
                           </button>
                         </div>
                       </article>

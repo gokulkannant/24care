@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { Volume2, CheckCircle2, Zap, Radio, Phone, ShieldCheck } from "lucide-react";
 import { AuthPanel, type AuthenticatedAppUser } from "@/components/auth-panel";
 import { LiveVoiceCall } from "@/components/live-voice-call";
 import { demoClinicalPolicy } from "@/lib/clinical-policy";
@@ -588,7 +589,7 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
                           setAnswer(lang === "ml" ? s.transcript : s.concern);
                         }}
                       >
-                        ⚡ {lang === "ml" ? s.malayalamTitle : s.title}
+                        <Zap size={11} className="preset-chip-icon" /> {lang === "ml" ? s.malayalamTitle : s.title}
                       </button>
                     ))}
                   </div>
@@ -627,7 +628,7 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
               </>
             ) : hasCompleted ? (
               <div className="portal-complete" role="status">
-                <span className="complete-mark" aria-hidden="true">✓</span>
+                <CheckCircle2 size={36} className="complete-mark-svg" aria-hidden="true" />
                 <div><p className="eyebrow">Request submitted</p><h2>{t.submittedHeading}</h2><p>{t.submittedDesc}</p></div>
                 <div className={`priority-banner priority-banner--${triage?.priority === "immediate_clinician_review" ? "critical" : triage?.priority === "urgent_review" ? "urgent" : triage?.priority === "same_day_queue" ? "same-day" : triage?.priority === "routine_queue" ? "routine" : "unknown"}`}><span className="priority-kicker">Prepared priority</span><strong>{priorityLabel}</strong><span>Policy {triage?.policyVersion}</span></div>
                 <button className="secondary-button" onClick={restart}>{t.startAnother}</button>
@@ -639,7 +640,7 @@ export function PatientPortal({ role, userName, authenticated, onRoleChange, onA
                 <p className="evidence-quote">{recordingTranscript || "No transcript has been returned yet."}</p>
                 {recordingTranscript ? (
                   <button type="button" className="text-button" onClick={() => playSyntheticSpeech(recordingTranscript)}>
-                    {isPlayingAudio ? "🔊 Playing audio…" : "🔊 Listen to transcript"}
+                    <Volume2 size={14} /> {isPlayingAudio ? "Playing audio…" : "Listen to transcript"}
                   </button>
                 ) : null}
                 {recorderState === "recording" ? <button className="danger-button" type="button" onClick={() => void stopRecordedCall()}>Stop and submit call</button> : null}

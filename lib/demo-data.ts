@@ -106,6 +106,15 @@ export interface DemoScenario {
   change: string;
   support: string;
   priorityNote: string;
+  patientRecordNumber: string;
+  age: number;
+  gender: "Male" | "Female";
+  primaryDiagnosis: string;
+  palliativePerformanceScore: string;
+  activeMedications: string[];
+  knownAllergies: string;
+  resuscitationStatus: string;
+  emergencyContact: string;
 }
 
 export const demoScenarios: DemoScenario[] = [
@@ -121,6 +130,15 @@ export const demoScenarios: DemoScenario[] = [
     change: "It suddenly became much worse",
     support: "Clinical review",
     priorityNote: "Immediate review cue: uncontrolled breakthrough pain despite morphine",
+    patientRecordNumber: "IPM-CLT-2024-4109",
+    age: 68,
+    gender: "Male",
+    primaryDiagnosis: "Carcinoma Tongue (Stage IV) with cervical lymphadenopathy",
+    palliativePerformanceScore: "PPS 40% (Mainly in bed / extensive disease)",
+    activeMedications: ["Tab. Morphine 10mg Q4H", "Syr. Lactulose 15ml HS", "Tab. Haloperidol 1.5mg SOS", "Tab. Pantoprazole 40mg OD"],
+    knownAllergies: "NKDA (No Known Drug Allergies)",
+    resuscitationStatus: "DNR / Allow Natural Death (Confirmed with Family)",
+    emergencyContact: "+91 94471 28910 (Son - Arun)",
   },
   {
     id: "catheter-block",
@@ -134,6 +152,15 @@ export const demoScenarios: DemoScenario[] = [
     change: "It has increased today",
     support: "Clinical review",
     priorityNote: "Urgent review cue: acute urinary retention / blocked catheter",
+    patientRecordNumber: "IPM-CLT-2023-8821",
+    age: 74,
+    gender: "Female",
+    primaryDiagnosis: "Metastatic Ca Cervix with bilateral hydronephrosis",
+    palliativePerformanceScore: "PPS 50% (Considerable disease / mainly seated)",
+    activeMedications: ["Tab. Paracetamol 650mg Q6H", "Tab. Tramadol 50mg BD", "Tab. Ondansetron 4mg SOS"],
+    knownAllergies: "Sulfa antibiotics (Urticaria)",
+    resuscitationStatus: "DNR Recorded",
+    emergencyContact: "+91 98460 55123 (Daughter - Mini)",
   },
   {
     id: "dressing-supplies",
@@ -147,9 +174,17 @@ export const demoScenarios: DemoScenario[] = [
     change: "It is stable or routine",
     support: "Supplies today",
     priorityNote: "Routine queue: scheduled palliative dressing replenishment",
+    patientRecordNumber: "IPM-CLT-2024-1054",
+    age: 62,
+    gender: "Male",
+    primaryDiagnosis: "Malignant fungating chest wall ulcer (Metastatic Sarcoma)",
+    palliativePerformanceScore: "PPS 60% (Reduced ambulation / self care)",
+    activeMedications: ["Tab. Metronidazole 400mg TDS (odor control)", "Tab. Diclofenac 50mg PRN", "Topical Metronidazole Gel"],
+    knownAllergies: "NKDA",
+    resuscitationStatus: "Full Support (Hospital preference)",
+    emergencyContact: "+91 97455 12098 (Spouse - Fatima)",
   },
 ];
-
 export const illustrativeBenchmarks: BenchmarkRun[] = [
   {
     provider: "OpenAI live transcription",

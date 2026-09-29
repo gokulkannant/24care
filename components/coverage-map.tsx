@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
+import { MessageSquare, Compass, Send } from "lucide-react";
 import type { Priority, StaffMember } from "@/lib/types";
 
 const LeafletCoverageMap = dynamic(() => import("./leaflet-coverage-map"), {
@@ -72,8 +73,8 @@ export function CoverageMap({ cases, staff, onAssignNurse }: CoverageMapProps) {
 
   function exportToWhatsApp() {
     const text = [
-      "🏥 *IPM 24 Care - Nurse Visit Itinerary*",
-      "📍 Care Hub: Kozhikode Medical College",
+      "*IPM 24 Care - Nurse Visit Itinerary*",
+      "Care Hub: Kozhikode Medical College",
       "",
       ...routeCases.map(
         (item, index) =>
@@ -212,10 +213,10 @@ export function CoverageMap({ cases, staff, onAssignNurse }: CoverageMapProps) {
           </ol>
           <div className="coverage-route-actions">
             <button type="button" className="secondary-button" onClick={exportToWhatsApp}>
-              📲 Share itinerary via WhatsApp
+              <MessageSquare size={13} /> Share Itinerary via WhatsApp
             </button>
             <button type="button" className="secondary-button" onClick={exportToGoogleMaps}>
-              🗺️ Open route in Google Maps
+              <Compass size={13} /> Open Route in Google Maps
             </button>
           </div>
         </div>

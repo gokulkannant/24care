@@ -194,11 +194,10 @@ h3 { font-size: var(--text-base); letter-spacing: 0; }
 .nav-list { display: grid; gap: 4px; }
 .nav-item {
   width: 100%;
-  min-height: 40px;
-  display: grid;
-  grid-template-columns: 24px 1fr auto;
+  min-height: 38px;
+  display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   padding: 8px 12px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -207,6 +206,11 @@ h3 { font-size: var(--text-base); letter-spacing: 0; }
   text-align: left;
   cursor: pointer;
   transition: all 140ms ease;
+}
+.nav-item-icon {
+  color: #68917d;
+  flex-shrink: 0;
+  transition: color 140ms ease;
 }
 .nav-item-eyebrow {
   color: #68917d;
@@ -218,9 +222,13 @@ h3 { font-size: var(--text-base); letter-spacing: 0; }
   color: inherit;
   font-size: 13px;
   font-weight: 600;
+  flex: 1;
 }
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+.nav-item:hover .nav-item-icon {
   color: #ffffff;
 }
 .nav-item.is-active {
@@ -229,6 +237,7 @@ h3 { font-size: var(--text-base); letter-spacing: 0; }
   background: rgba(255, 255, 255, 0.09);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+.nav-item.is-active .nav-item-icon { color: #f4c766; }
 .nav-item.is-active .nav-item-eyebrow { color: #f4c766; }
 .nav-item-counter {
   display: inline-grid;
@@ -848,6 +857,564 @@ input::placeholder, textarea::placeholder { color: #8a9692; }
 .uncertainty--moderate { color: #805319; background: #fff0d8; }
 .uncertainty--high { color: #5f696c; background: var(--unknown-soft); }
 
+
+/* ==========================================================================
+   Patient Clinical Context Card (EHR)
+   ========================================================================== */
+
+.patient-ehr-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 13px 16px;
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 10px;
+}
+
+.ehr-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ehr-patient-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ehr-avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #eef6f2;
+  color: var(--forest);
+  flex-shrink: 0;
+}
+
+.ehr-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ehr-name-row h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--forest-deep);
+}
+
+.ehr-mrn-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #eaf3ee;
+  color: var(--forest);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.ehr-age-tag {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ehr-diagnosis-preview {
+  margin: 3px 0 0;
+  color: #3b5047;
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.ehr-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ehr-sbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border: 1px solid #c8ded2;
+  border-radius: 6px;
+  background: #f7faf8;
+  color: var(--forest);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+.ehr-sbar-btn:hover {
+  background: #eaf5ee;
+  border-color: var(--forest);
+}
+
+.ehr-toggle-expand {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--muted);
+  cursor: pointer;
+}
+.ehr-toggle-expand:hover {
+  background: #f4f7f5;
+  color: var(--ink);
+}
+
+.ehr-action-toast {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #e4f7ec;
+  border: 1px solid #b7ebd0;
+  color: #156947;
+  font-size: 11.5px;
+  font-weight: 650;
+  animation: modal-fade-in 150ms ease;
+}
+
+.ehr-quick-vitals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.vital-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: #f4f8f5;
+  border: 1px solid #d9e9df;
+  font-size: 11px;
+  color: #314a3f;
+}
+.vital-icon {
+  color: var(--forest);
+}
+.vital-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+.vital-plus {
+  color: var(--forest);
+  font-size: 10px;
+  font-weight: 800;
+}
+.vital-chip--code {
+  background: #fdf5f5;
+  border-color: #f7d2d0;
+  color: #9c2e28;
+}
+.vital-chip--code .vital-icon {
+  color: #9c2e28;
+}
+
+.ehr-expanded-body {
+  display: grid;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e7efe9;
+}
+
+.ehr-grid-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ehr-detail-block {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #f8faf9;
+  border: 1px solid #e1ebe4;
+}
+
+.ehr-block-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--forest);
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ehr-med-list {
+  margin: 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 3px;
+  color: #2e473c;
+  font-size: 11px;
+}
+
+.ehr-allergy-text {
+  margin: 0;
+  color: #9c2e28;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.ehr-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.ehr-quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.actions-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.action-buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ehr-clinical-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #bad8c7;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--forest-deep);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 120ms ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.ehr-clinical-action-btn:hover {
+  background: #eaf5ee;
+  border-color: var(--forest);
+  transform: translateY(-1px);
+}
+
+/* SBAR Modal */
+.sbar-modal-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: grid;
+  place-items: center;
+  padding: var(--s4);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.sbar-modal-card {
+  width: 100%;
+  max-width: 600px;
+  display: grid;
+  gap: var(--s3);
+  padding: var(--s5);
+  border-radius: var(--r-lg);
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.32);
+}
+
+.sbar-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.sbar-header h2 {
+  margin: 2px 0 0;
+  font-size: 17px;
+  color: var(--forest-deep);
+}
+
+.sbar-close-btn {
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.sbar-body {
+  max-height: 55vh;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f8faf9;
+  padding: 12px 14px;
+}
+
+.sbar-text-preview {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  color: #1a332a;
+}
+
+.sbar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 6px;
+}
+.sbar-footnote-text {
+  color: var(--muted);
+  font-size: 10px;
+}
+.sbar-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   Call Audio Player & Waveform Visualizer
+   ========================================================================== */
+
+.call-audio-player-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #f7faf8;
+  border: 1px solid #d9eae0;
+  margin-bottom: var(--s2);
+}
+
+.audio-player-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.channel-indicators {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.channel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 750;
+}
+.channel-badge--live {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.channel-badge--playback {
+  background: #e2f2e9;
+  color: var(--forest);
+}
+
+.codec-badge {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.audio-meta-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.audio-speed-btn {
+  padding: 2px 6px;
+  border: 1px solid #cce0d4;
+  border-radius: 4px;
+  background: #ffffff;
+  color: var(--forest);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.audio-speed-btn:hover {
+  background: #eaf4ed;
+}
+
+.audio-mute-btn {
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.audio-mute-btn:hover {
+  color: var(--ink);
+}
+
+.audio-waveform-track {
+  position: relative;
+  height: 38px;
+  background: #ffffff;
+  border: 1px solid #dce8e0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.waveform-bars {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  gap: 2px;
+}
+
+.wf-bar {
+  display: block;
+  flex: 1;
+  min-width: 2px;
+  background: #b5d5c5;
+  border-radius: 1px;
+  transition: background 100ms ease, height 120ms ease;
+}
+.wf-bar--passed {
+  background: var(--forest);
+}
+.wf-bar--animating {
+  animation: wf-pulse 600ms infinite ease-in-out alternate;
+}
+
+@keyframes wf-pulse {
+  0% { transform: scaleY(0.6); }
+  100% { transform: scaleY(1.3); }
+}
+
+.waveform-scrubber-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #dc2626;
+  pointer-events: none;
+  transition: left 80ms linear;
+}
+
+.audio-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.audio-play-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-play-toggle-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--forest);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(13, 92, 77, 0.28);
+  transition: all 120ms ease;
+}
+.audio-play-toggle-btn:hover {
+  background: var(--forest-deep);
+  transform: scale(1.05);
+}
+
+.audio-reset-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #d2e4da;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--muted);
+  cursor: pointer;
+}
+.audio-reset-btn:hover {
+  background: #eaf4ed;
+  color: var(--ink);
+}
+
+.audio-timestamps {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: #3b5349;
+}
+.time-current {
+  font-weight: 700;
+  color: var(--forest-deep);
+}
+.time-divider {
+  opacity: 0.5;
+}
+.time-duration {
+  color: var(--muted);
+}
+
+.audio-scrub-slider-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.audio-scrubber-input {
+  width: 100%;
+  height: 4px;
+  accent-color: var(--forest);
+  cursor: pointer;
+}
 .evidence-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
 .evidence-list li {
   display: grid; gap: 3px;
